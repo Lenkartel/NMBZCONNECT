@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nmb-connect-loan
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: TELEGRAM_TOKEN
+        sync: false       # set in Render dashboard
+      - key: TELEGRAM_CHAT_ID
+        sync: false       # set in Render dashboard
+    autoDeploy: true
+    plan: free
