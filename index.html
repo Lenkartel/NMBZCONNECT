@@ -130,6 +130,25 @@ html,body{
 
 /* ── Eligibility result ── */
 .elig{display:none;flex-direction:column;gap:6px;margin:10px 16px 14px;border-radius:14px;padding:14px;animation:fadeUp .22s var(--ease) both}
+
+/* ── NMB Account toggle ── */
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--div)}
+.acct-lbl{display:flex;flex-direction:column;gap:2px}
+.acct-lbl-t{font-size:14px;font-weight:600;color:var(--t1)}
+.acct-lbl-s{font-size:11px;color:var(--t3)}
+/* iOS-style toggle */
+.toggle{position:relative;width:48px;height:28px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;border-radius:14px;background:var(--s2);border:1.5px solid var(--div);transition:background .2s,border-color .2s;cursor:pointer}
+.toggle input:checked+.toggle-track{background:var(--navy);border-color:var(--navy)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);transition:transform .22s var(--spring)}
+.toggle input:checked~.toggle-thumb{transform:translateX(20px)}
+/* Not an NMB customer — fail banner */
+.acct-fail{display:none;flex-direction:column;gap:6px;margin:0 16px 14px;border-radius:14px;padding:14px;background:var(--err2);border:1.5px solid rgba(192,57,43,.2);animation:fadeUp .2s var(--ease) both}
+.acct-fail.on{display:flex}
+.acct-fail-t{font-size:13px;font-weight:700;color:var(--err)}
+.acct-fail-s{font-size:12px;color:var(--t2);line-height:1.55}
+.acct-fail-link{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:12px;font-weight:700;color:var(--navy);background:rgba(13,43,107,.07);border-radius:var(--rp);padding:7px 14px;cursor:pointer;touch-action:manipulation;border:none;font-family:var(--f)}
 .elig.show{display:flex}
 .elig.ok{background:var(--ok2);border:1.5px solid rgba(27,138,78,.2)}
 .elig-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ok)}
@@ -275,6 +294,26 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
       <div class="pane on" id="p0">
         <div class="slbl">Eligibility Check</div>
         <div class="card">
+          <!-- NMB Account toggle — must be YES for eligibility -->
+          <div class="acct-row">
+            <div class="acct-lbl">
+              <div class="acct-lbl-t">I have an NMB Bank account</div>
+              <div class="acct-lbl-s">Required to apply for an NMB soft loan</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="hasAcct" onchange="onAcctToggle()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <!-- Fail state — shown when toggle is OFF and user has interacted -->
+          <div class="acct-fail" id="acctFail">
+            <div class="acct-fail-t">✕ NMB Account Required</div>
+            <div class="acct-fail-s">You need an active NMB Bank account to qualify for this loan. Open an account first, then return to apply.</div>
+            <button class="acct-fail-link" onclick="void 0">🏦 Open an NMB Account →</button>
+          </div>
+          <!-- Rest of fields — hidden until account confirmed -->
+          <div id="eligFields" style="display:none">
           <div class="fg" style="padding-top:14px">
             <div class="fl">Employment Status<em>*</em></div>
             <select class="fsel" id="empType">
@@ -296,6 +335,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
             <div class="elig-s" id="eligSub"></div>
             <div class="elig-chips" id="eligChips"></div>
           </div>
+          </div><!-- /eligFields -->
         </div>
       </div>
 
@@ -434,7 +474,28 @@ function incLimit(){
   var v=+document.getElementById('income').value||0;
   return v<100?0:Math.min(Math.max(Math.floor(v*5/50)*50,500),50000);
 }
+/* Account toggle handler */
+function onAcctToggle(){
+  var hasAcct=document.getElementById('hasAcct').checked;
+  document.getElementById('eligFields').style.display=hasAcct?'':'none';
+  document.getElementById('acctFail').className=hasAcct?'acct-fail':'acct-fail on';
+  if(!hasAcct){
+    /* fail — clear eligibility result and lock button */
+    document.getElementById('eligBox').className='elig';
+    document.getElementById('btnMain').disabled=true;
+  }else{
+    /* account confirmed — rerun eligibility with current values */
+    runElig();
+  }
+}
+
 function runElig(){
+  /* Must have NMB account */
+  if(!document.getElementById('hasAcct').checked){
+    document.getElementById('eligBox').className='elig';
+    document.getElementById('btnMain').disabled=true;
+    return;
+  }
   var inc=+document.getElementById('income').value||0;
   var emp=document.getElementById('empType').value;
   var box=document.getElementById('eligBox');
@@ -442,9 +503,10 @@ function runElig(){
   var lim=incLimit();
   document.getElementById('eligAmt').textContent=fmtU(lim);
   document.getElementById('eligSub').textContent=
-    'Income '+fmtU(inc)+'/mo · '+( emp==='employed'?'Salaried':'Self-employed')+
+    'Income '+fmtU(inc)+'/mo · '+(emp==='employed'?'Salaried':'Self-employed')+
     ' · Min repayment USD '+fmt2(repay(500,tenure))+'/mo';
   document.getElementById('eligChips').innerHTML=
+    '<span class="echip">NMB Account ✓</span>'+
     '<span class="echip">Max '+fmtU(lim)+'</span>'+
     '<span class="echip">Up to 60 months</span>';
   box.className='elig ok show';
@@ -658,6 +720,7 @@ function doSubmit(){
     nid:nRaw,
     emp:document.getElementById('empType').value,
     income:+document.getElementById('income').value||0,
+    hasAcct:document.getElementById('hasAcct').checked,
     amount:loanAmt,tenure:tenure,
     monthly:repay(loanAmt,tenure),
     rate:(RATE*100).toFixed(0),
