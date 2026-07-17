@@ -15,45 +15,39 @@ button,div,span,label{-webkit-user-select:none;user-select:none}
 input,select,textarea{-webkit-user-select:text!important;user-select:text!important}
 
 :root{
-  /* NMB Navy + Gold */
   --navy:#0D2B6B;--navy2:#0A2157;--navy3:#071845;
   --gold:#C9A227;--gold2:rgba(201,162,39,.15);--gold3:rgba(201,162,39,.08);
   --blue:#1565C0;--blue2:rgba(21,101,192,.1);
-  /* Surfaces */
   --bg:#F4F6FA;--surface:#FFFFFF;--surface2:#EEF1F7;--surface3:#E5E9F2;
-  /* Text */
   --tx1:#0D1B3E;--tx2:#4A5568;--tx3:#8E9AB5;
-  /* Status */
   --ok:#1B8A4E;--ok2:rgba(27,138,78,.1);
   --err:#C0392B;--err2:rgba(192,57,43,.1);
   --warn:#D97706;--warn2:rgba(217,119,6,.1);
-  /* Divider */
   --div:rgba(0,0,0,.08);
-  /* Font */
   --f:'Inter',system-ui,sans-serif;
-  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rp:999px;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--rp:999px;
   --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
   --sb:24px;
   --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
   --shadow:0 2px 8px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
-  --shadow-lg:0 4px 20px rgba(0,0,0,.1),0 8px 32px rgba(0,0,0,.07);
 }
 
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes kbUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes progW{from{width:0}to{width:100%}}
-@keyframes rip{to{transform:scale(4);opacity:0}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes checkDraw{to{stroke-dashoffset:0}}
+@keyframes spin    {to{transform:rotate(360deg)}}
+@keyframes slideUp {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadeIn  {from{opacity:0}to{opacity:1}}
+@keyframes rip     {to{transform:scale(4);opacity:0}}
+@keyframes pulse   {0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes kbUp    {from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes progW   {from{width:0}to{width:100%}}
+@keyframes stepFwd {from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes stepBck {from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
 
 html,body{font-family:var(--f);background:var(--bg);color:var(--tx1);-webkit-font-smoothing:antialiased;min-height:100dvh;overflow-x:hidden;overflow-y:auto}
 
-/* ── Transition curtain ── */
+/* ── Curtain ── */
 .curtain{position:fixed;inset:0;z-index:9999;pointer-events:none;background:var(--navy);opacity:0;transition:opacity .35s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
 .curtain.show{opacity:1;pointer-events:auto}
-.c-logo{width:80px;height:80px;border-radius:20px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.c-logo{width:80px;height:80px;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .c-logo img{width:64px;object-fit:contain}
 .c-spin{width:28px;height:28px;border:2.5px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
 .c-lbl{font-size:14px;font-weight:600;color:rgba(255,255,255,.7)}
@@ -62,12 +56,8 @@ html,body{font-family:var(--f);background:var(--bg);color:var(--tx1);-webkit-fon
 .page{display:flex;flex-direction:column;min-height:100dvh;animation:slideUp .3s var(--ease) both}
 
 /* ── App bar ── */
-.appbar{
-  position:sticky;top:0;z-index:50;
-  background:var(--navy);
-  padding:calc(var(--sb) + env(safe-area-inset-top,0px) + 4px) 18px 16px;
-}
-.ab-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.appbar{position:sticky;top:0;z-index:50;background:var(--navy);padding:calc(var(--sb) + env(safe-area-inset-top,0px) + 4px) 18px 14px}
+.ab-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .ab-logo-wrap{display:flex;align-items:center;gap:10px}
 .ab-logo{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
 .ab-logo img{width:30px;object-fit:contain}
@@ -77,52 +67,62 @@ html,body{font-family:var(--f);background:var(--bg);color:var(--tx1);-webkit-fon
 .ab-amount-badge{background:var(--gold2);border:1px solid var(--gold);border-radius:var(--rp);padding:6px 14px;text-align:right}
 .ab-badge-lbl{font-size:8px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;opacity:.8}
 .ab-badge-val{font-size:16px;font-weight:700;color:var(--gold);line-height:1;letter-spacing:-.02em;font-feature-settings:"tnum"}
-/* Heading row */
 .ab-heading{color:#fff}
 .ab-h1{font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.2;margin-bottom:2px}
 .ab-h1 span{color:var(--gold)}
 .ab-h2{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
 
+/* ── Step progress bar ── */
+.step-bar{display:flex;align-items:center;gap:0;padding:10px 18px 0}
+.sbar-item{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.sbar-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .3s}
+.sbar-dot.done{background:var(--gold)}
+.sbar-dot.active{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.25)}
+.sbar-lbl{font-size:9px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;transition:color .3s}
+.sbar-lbl.active{color:rgba(255,255,255,.85)}
+.sbar-lbl.done{color:var(--gold)}
+.sbar-line{flex:1;height:1px;background:rgba(255,255,255,.15);margin-bottom:11px}
+.sbar-line.done{background:var(--gold)}
+
 /* ── Content ── */
 .content{padding:16px 16px 0;display:flex;flex-direction:column;gap:14px}
+.step-pane{display:none;flex-direction:column;gap:14px}
+.step-pane.active{display:flex;animation:stepFwd .22s var(--ease) both}
+.step-pane.back{animation:stepBck .22s var(--ease) both}
 
-/* ── Section label ── */
+/* ── Eligibility card ── */
 .sec-lbl{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
-
-/* ── Cards ── */
 .card{background:var(--surface);border-radius:var(--r20);box-shadow:var(--shadow);overflow:hidden}
-.card-header{padding:14px 16px;border-bottom:1px solid var(--div);display:flex;align-items:center;gap:10px}
-.card-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.card-icon svg{display:block}
-.card-title{font-size:15px;font-weight:600;color:var(--tx1)}
-.card-sub{font-size:11px;color:var(--tx3);margin-top:1px}
-.card-body{padding:16px}
+.card-body{padding:16px;display:flex;flex-direction:column;gap:0}
 
-/* ── Loan amount slider section ── */
+/* ── Eligibility result banner ── */
+.elig-result{border-radius:16px;padding:16px;margin-top:4px;display:none;flex-direction:column;gap:6px;animation:fadeIn .25s var(--ease) both}
+.elig-result.show{display:flex}
+.elig-result.ok{background:var(--ok2);border:1.5px solid rgba(27,138,78,.25)}
+.elig-result.err{background:var(--err2);border:1.5px solid rgba(192,57,43,.2)}
+.elig-result.warn{background:var(--warn2);border:1.5px solid rgba(217,119,6,.2)}
+.elig-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.elig-result.ok .elig-tag{color:var(--ok)}
+.elig-result.err .elig-tag{color:var(--err)}
+.elig-result.warn .elig-tag{color:var(--warn)}
+.elig-headline{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.3px;line-height:1.2}
+.elig-sub{font-size:12px;color:var(--tx2);line-height:1.5;margin-top:2px}
+.elig-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.elig-chip{padding:5px 10px;border-radius:var(--rp);font-size:11px;font-weight:600}
+.elig-chip.ok{background:rgba(27,138,78,.12);color:var(--ok)}
+.elig-chip.err{background:rgba(192,57,43,.1);color:var(--err)}
+
+/* ── Loan amount slider ── */
 .amount-display{text-align:center;padding:20px 16px 14px}
 .amount-cur{font-size:16px;font-weight:600;color:var(--tx3)}
 .amount-val{font-size:48px;font-weight:700;color:var(--navy);letter-spacing:-.04em;line-height:1;font-feature-settings:"tnum";display:inline-block;vertical-align:middle}
 .amount-label{font-size:12px;color:var(--tx3);margin-top:6px}
-
-/* Range slider */
 .range-wrap{padding:0 16px 8px;position:relative}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;
-  width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;
-  background:linear-gradient(to right,var(--navy) 0%,var(--navy) var(--pct,10%),var(--surface3) var(--pct,10%),var(--surface3) 100%);
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;
-  width:24px;height:24px;border-radius:50%;
-  background:var(--navy);border:3px solid #fff;
-  box-shadow:0 2px 8px rgba(13,43,107,.3);cursor:pointer;
-  transition:transform .15s var(--spring);
-}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--navy) 0%,var(--navy) var(--pct,0%),var(--surface3) var(--pct,0%),var(--surface3) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--navy);border:3px solid #fff;box-shadow:0 2px 8px rgba(13,43,107,.3);cursor:pointer;transition:transform .15s var(--spring)}
 input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2)}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--navy);border:3px solid #fff;box-shadow:0 2px 8px rgba(13,43,107,.3);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--navy);border:3px solid #fff;cursor:pointer}
 .range-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-weight:600;color:var(--tx3)}
-
-/* Tenure chips */
 .tenure-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 16px 16px}
 .tchip{display:flex;flex-direction:column;align-items:center;padding:8px 4px;border-radius:12px;border:1.5px solid var(--div);background:var(--surface2);cursor:pointer;touch-action:manipulation;outline:none;transition:all .18s;position:relative}
 .tchip-n{font-size:13px;font-weight:700;color:var(--tx2)}
@@ -130,12 +130,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .tchip.on{background:var(--navy);border-color:var(--navy)}
 .tchip.on .tchip-n,.tchip.on .tchip-u{color:#fff}
 .tchip-badge{position:absolute;top:-7px;right:-4px;background:var(--gold);border:2px solid var(--bg);border-radius:var(--rp);padding:1px 5px;font-size:8px;font-weight:700;color:var(--navy);white-space:nowrap}
-
-/* Monthly repayment strip */
 .repay-strip{display:flex;align-items:center;justify-content:space-between;background:var(--blue2);border-radius:12px;padding:11px 14px;margin:0 16px 16px}
 .rs-lbl{font-size:12px;color:var(--blue);font-weight:500}
 .rs-val{font-size:18px;font-weight:700;color:var(--blue);font-feature-settings:"tnum"}
-.rs-sub{font-size:10px;color:var(--tx3);margin-top:1px;text-align:right}
 
 /* ── Form inputs ── */
 .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
@@ -143,46 +140,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .form-lbl{font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:.1px}
 .form-lbl span{color:var(--err);margin-left:2px}
 .form-hint{font-size:11px;color:var(--tx3);margin-top:2px}
-.form-err{font-size:11px;color:var(--err);margin-top:2px;display:none}
-.form-err.show{display:block}
-
-.finput{
-  width:100%;padding:13px 14px;border-radius:12px;
-  border:1.5px solid var(--div);background:var(--surface2);
-  font-family:var(--f);font-size:15px;font-weight:500;color:var(--tx1);
-  outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
-}
+.finput{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--div);background:var(--surface2);font-family:var(--f);font-size:15px;font-weight:500;color:var(--tx1);outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
 .finput:focus{border-color:var(--navy);background:var(--surface);box-shadow:0 0 0 3px rgba(13,43,107,.1)}
 .finput.err{border-color:var(--err);box-shadow:0 0 0 3px var(--err2)}
 .finput.ok{border-color:var(--ok);background:var(--surface)}
 .finput::placeholder{color:var(--tx3)}
-.finput-icon-wrap{position:relative}
-.finput-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none}
-.finput-icon svg{width:16px;height:16px;display:block}
-
-/* National ID special input */
-.nid-display{
-  width:100%;padding:13px 14px;border-radius:12px;
-  border:1.5px solid var(--div);background:var(--surface2);
-  font-size:15px;font-weight:600;color:var(--tx1);
-  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
-  transition:border-color .2s,box-shadow .2s;
-  font-family:var(--f);letter-spacing:.5px;
-}
-.nid-display.foc{border-color:var(--navy);background:var(--surface);box-shadow:0 0 0 3px rgba(13,43,107,.1)}
-.nid-display.ok{border-color:var(--ok)}
-.nid-display.err{border-color:var(--err);box-shadow:0 0 0 3px var(--err2)}
-.nid-display.ph{color:var(--tx3);font-weight:400}
-.nid-caret{width:2px;height:18px;background:var(--navy);border-radius:2px;animation:pulse 1s ease-in-out infinite;display:none}
-.nid-display.foc .nid-caret{display:block}
-
-/* Phone number display (same custom kb as before) */
-.phone-display{
-  display:flex;align-items:center;
-  width:100%;padding:0 14px;border-radius:12px;
-  border:1.5px solid var(--div);background:var(--surface2);
-  cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s;
-}
+.phone-display{display:flex;align-items:center;width:100%;padding:0 14px;border-radius:12px;border:1.5px solid var(--div);background:var(--surface2);cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
 .phone-display.foc{border-color:var(--navy);background:var(--surface);box-shadow:0 0 0 3px rgba(13,43,107,.1)}
 .phone-display.ok{border-color:var(--ok);background:var(--surface)}
 .phone-display.err{border-color:var(--err);box-shadow:0 0 0 3px var(--err2)}
@@ -194,72 +157,41 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .ph-clear{display:none;width:30px;height:30px;border:none;background:var(--surface3);cursor:pointer;border-radius:50%;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation}
 .ph-clear.show{display:flex}
 .ph-clear svg{width:12px;height:12px;stroke:var(--tx3);fill:none;stroke-width:2.5;stroke-linecap:round}
-
-/* Select field */
-.fselect{
-  width:100%;padding:13px 14px;border-radius:12px;
-  border:1.5px solid var(--div);background:var(--surface2);
-  font-family:var(--f);font-size:15px;font-weight:500;color:var(--tx1);
-  outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E9AB5' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;
-  padding-right:36px;transition:border-color .2s;
-}
+.fselect{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--div);background:var(--surface2);font-family:var(--f);font-size:15px;font-weight:500;color:var(--tx1);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E9AB5' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;transition:border-color .2s}
 .fselect:focus{border-color:var(--navy);background-color:var(--surface);box-shadow:0 0 0 3px rgba(13,43,107,.1);outline:none}
-
-/* Status tag */
 .field-status{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;margin-top:4px;min-height:14px;color:var(--tx3);transition:color .2s}
 .field-status.ok{color:var(--ok)}
 .field-status.err{color:var(--err)}
 .field-status svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;flex-shrink:0}
 
-/* Limit info banner */
-.limit-banner{display:flex;align-items:center;gap:10px;background:var(--blue2);border-radius:12px;padding:11px 14px;border-left:3px solid var(--blue)}
-.limit-banner svg{width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
-.limit-banner-txt{font-size:12px;color:var(--blue);font-weight:500;line-height:1.5}
-.limit-banner-txt strong{color:var(--navy);font-weight:700}
+/* ── NID inline confirm panel ── */
+.nid-confirm-panel{display:none;background:var(--navy);border-radius:14px;padding:14px 16px;margin-top:8px;flex-direction:column;gap:10px;animation:fadeIn .2s var(--ease) both}
+.nid-confirm-panel.show{display:flex}
+.nid-confirm-q{font-size:13px;color:rgba(255,255,255,.75);font-weight:500}
+.nid-confirm-val{font-size:18px;font-weight:700;color:#fff;letter-spacing:.8px;font-feature-settings:"tnum"}
+.nid-confirm-btns{display:flex;gap:8px}
+.nid-btn{flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--f);font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;transition:transform .1s,opacity .15s}
+.nid-btn:active{transform:scale(.96)}
+.nid-btn.ok{background:var(--gold);color:var(--navy)}
+.nid-btn.edit{background:rgba(255,255,255,.12);color:#fff}
 
 /* ── Bottom action ── */
-.bottom-action{
-  position:sticky;bottom:0;z-index:40;
-  background:var(--surface);
-  border-top:1px solid var(--div);
-  padding:12px 16px max(20px,env(safe-area-inset-bottom));
-  box-shadow:0 -4px 20px rgba(0,0,0,.06);
-}
-.submit-btn{
-  width:100%;min-height:52px;padding:14px;border-radius:16px;
-  border:none;background:var(--navy);color:#fff;
-  font-family:var(--f);font-size:15px;font-weight:700;
-  cursor:pointer;touch-action:manipulation;outline:none;
-  box-shadow:0 4px 16px rgba(13,43,107,.3);
-  transition:transform .15s var(--spring),box-shadow .15s,opacity .2s;
-  position:relative;overflow:hidden;
-}
+.bottom-action{position:sticky;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--div);padding:10px 16px max(20px,env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.06);display:flex;gap:8px}
+.back-btn-sm{width:48px;min-height:50px;border-radius:14px;border:1.5px solid var(--div);background:var(--surface2);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.back-btn-sm svg{width:18px;height:18px;stroke:var(--navy);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.submit-btn{flex:1;min-height:50px;padding:14px;border-radius:14px;border:none;background:var(--navy);color:#fff;font-family:var(--f);font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;outline:none;box-shadow:0 4px 16px rgba(13,43,107,.3);transition:transform .15s var(--spring),box-shadow .15s,opacity .2s;position:relative;overflow:hidden}
 .submit-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(13,43,107,.2)}
 .submit-btn:disabled{opacity:.4;box-shadow:none;cursor:default;transform:none}
 .submit-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);pointer-events:none}
 .rip{position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.2);transform:scale(0);animation:rip .5s ease forwards}
-#nidConfirmBtn{opacity:.4}
-#nidConfirmBtn:not(:disabled){opacity:1;cursor:pointer}
-#nidConfirmBtn:disabled{opacity:.4;cursor:not-allowed}
-#nidConfirmBtn.done{background:var(--ok)!important}
 
 /* ── Banking keyboard ── */
 .kb-bd{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.45);display:none;backdrop-filter:blur(2px)}
 .kb-bd.on{display:block}
-.kb{
-  position:fixed;bottom:0;left:0;right:0;z-index:401;
-  background:var(--surface);border-radius:22px 22px 0 0;
-  border-top:1px solid var(--div);
-  padding:0 14px max(20px,env(safe-area-inset-bottom));
-  box-shadow:0 -8px 32px rgba(0,0,0,.12);
-  transform:translateY(100%);transition:transform .25s var(--ease);
-}
+.kb{position:fixed;bottom:0;left:0;right:0;z-index:401;background:var(--surface);border-radius:22px 22px 0 0;border-top:1px solid var(--div);padding:0 14px max(20px,env(safe-area-inset-bottom));box-shadow:0 -8px 32px rgba(0,0,0,.12);transform:translateY(100%);transition:transform .25s var(--ease)}
 .kb.on{transform:translateY(0)}
 .kb-drag{width:32px;height:3px;background:var(--surface3);border-radius:2px;margin:10px auto 12px}
 .kb-title{font-size:13px;font-weight:600;color:var(--tx2);text-align:center;margin-bottom:10px}
-/* display row */
 .kb-disp-row{display:flex;align-items:center;background:var(--surface2);border:1.5px solid var(--div);border-radius:12px;margin-bottom:12px;overflow:hidden}
 .kb-disp-prefix{display:flex;align-items:center;gap:5px;padding:12px 12px 12px 14px;border-right:1.5px solid var(--div);flex-shrink:0}
 .kb-disp-flag{font-size:18px;line-height:1}
@@ -269,33 +201,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .kb-back{width:46px;height:46px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0}
 .kb-back:active{background:var(--surface3);border-radius:50%}
 .kb-back svg{width:18px;height:18px;stroke:var(--tx2);fill:none;stroke-width:2;stroke-linecap:round}
-/* progress */
-.kb-prog{height:3px;background:var(--surface3);border-radius:2px;margin-bottom:12px;overflow:hidden;display:none}
-.kb-prog.on{display:block}
-.kb-prog-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--blue));border-radius:2px;width:0;animation:progW 3s linear forwards}
-/* grid */
 .kb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.kk{
-  height:54px;border-radius:14px;border:none;
-  background:var(--surface2);
-  font-size:21px;font-weight:600;color:var(--tx1);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;touch-action:manipulation;outline:none;
-  position:relative;overflow:hidden;transition:background .1s,transform .08s;
-  box-shadow:var(--shadow-sm);
-}
+.kk{height:54px;border-radius:14px;border:none;background:var(--surface2);font-size:21px;font-weight:600;color:var(--tx1);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;position:relative;overflow:hidden;transition:background .1s,transform .08s;box-shadow:var(--shadow-sm)}
 .kk:active{background:var(--surface3);transform:scale(.93)}
 .kk.ghost{background:transparent;box-shadow:none;pointer-events:none}
 .kk.clr{font-size:12px;font-weight:700;color:var(--err);background:var(--err2)}
 .kk.clr:active{background:rgba(192,57,43,.18)}
 
-/* NID keyboard variant — shows formatted ID */
-.kb-nid-disp{display:flex;align-items:center;background:var(--surface2);border:1.5px solid var(--div);border-radius:12px;margin-bottom:12px;overflow:hidden;padding:12px 14px;justify-content:space-between}
-.kb-nid-val{font-size:19px;font-weight:700;color:var(--tx1);letter-spacing:1px;font-family:var(--f);flex:1}
-.kb-nid-val.ph{color:var(--tx3);font-size:14px;font-weight:400;letter-spacing:0}
-.kb-nid-hint{font-size:10px;color:var(--tx3);text-align:right;line-height:1.4}
-
-/* ── Spacing ── */
 .page-bottom{height:max(20px,env(safe-area-inset-bottom))}
 </style>
 </head>
@@ -328,212 +240,229 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="ab-h1">Apply for a <span>Soft Loan</span></div>
       <div class="ab-h2">Fast approval · Employed &amp; Self-employed</div>
     </div>
+    <!-- Step progress -->
+    <div class="step-bar">
+      <div class="sbar-item">
+        <div class="sbar-dot active" id="sd0"></div>
+        <div class="sbar-lbl active" id="sl0">Eligibility</div>
+      </div>
+      <div class="sbar-line" id="sline0"></div>
+      <div class="sbar-item">
+        <div class="sbar-dot" id="sd1"></div>
+        <div class="sbar-lbl" id="sl1">Loan Setup</div>
+      </div>
+      <div class="sbar-line" id="sline1"></div>
+      <div class="sbar-item">
+        <div class="sbar-dot" id="sd2"></div>
+        <div class="sbar-lbl" id="sl2">Personal Info</div>
+      </div>
+    </div>
   </div>
 
   <div class="content">
 
-    <!-- Loan Amount -->
-    <div id="loanSection" style="display:none">
-      <div class="sec-lbl">Loan Amount</div>
-      <div class="card">
-        <div class="amount-display">
-          <div><span class="amount-cur">USD </span><span class="amount-val" id="amtDisplay">500</span></div>
-          <div class="amount-label">Tap slider to adjust · $500 – $10,000</div>
-        </div>
-        <div class="range-wrap">
-          <input type="range" id="loanSlider" min="500" max="10000" step="50" value="500">
-          <div class="range-labels"><span>$500</span><span>$10,000</span></div>
-        </div>
-        <!-- Tenure -->
-        <div style="padding:10px 16px 8px">
-          <div class="sec-lbl" style="margin-bottom:8px">Repayment Period</div>
-          <div class="tenure-grid">
-            <button class="tchip on" data-m="6"><div class="tchip-n">6</div><div class="tchip-u">Months</div></button>
-            <button class="tchip" data-m="12"><div class="tchip-n">12</div><div class="tchip-u">Months</div></button>
-            <button class="tchip" data-m="24"><div class="tchip-n">24</div><div class="tchip-u">Months</div></button>
-            <button class="tchip" data-m="36"><div class="tchip-n">36</div><div class="tchip-u">Months</div></button>
-            <button class="tchip" data-m="60"><div class="tchip-n">60</div><div class="tchip-u">Months</div><div class="tchip-badge">Max</div></button>
-          </div>
-        </div>
-        <!-- Repayment summary -->
-        <div class="repay-strip">
-          <div>
-            <div class="rs-lbl">Monthly Repayment</div>
-            <div class="rs-sub" id="repayNote">at 2% p.m. flat rate</div>
-          </div>
-          <div style="text-align:right">
-            <div class="rs-val" id="monthlyRepay">USD 103.33</div>
+    <!-- ═══ STEP 1: ELIGIBILITY CHECK ═══ -->
+    <div class="step-pane active" id="pane0">
+      <div>
+        <div class="sec-lbl">Check Eligibility</div>
+        <div class="card">
+          <div class="card-body">
+
+            <div class="form-group">
+              <div class="form-lbl">Employment Status<span>*</span></div>
+              <select class="fselect" id="empType">
+                <option value="">Select employment status…</option>
+                <option value="employed">Employed (Salaried)</option>
+                <option value="self">Self-Employed (Stable Income)</option>
+              </select>
+              <div class="field-status" id="empStatus"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0">
+              <div class="form-lbl">Monthly Net Income (USD)<span>*</span></div>
+              <input class="finput" type="number" inputmode="decimal" id="income"
+                placeholder="e.g. 800" min="100" max="200000" step="1">
+              <div class="field-status" id="incomeStatus">Min $100/month required</div>
+            </div>
+
+            <!-- Eligibility result — shown after income entered -->
+            <div class="elig-result" id="eligResult">
+              <div class="elig-tag" id="eligTag">Eligible</div>
+              <div class="elig-headline" id="eligHeadline">You qualify for up to <span id="eligAmt">$0</span></div>
+              <div class="elig-sub" id="eligSub"></div>
+              <div class="elig-chips" id="eligChips"></div>
+            </div>
+
           </div>
         </div>
       </div>
+      <div class="page-bottom"></div>
     </div>
 
-    <!-- Personal Details -->
-    <div>
-      <div class="sec-lbl">Personal Details</div>
-      <div class="card">
-        <div class="card-body" style="display:flex;flex-direction:column;gap:0">
-
-          <!-- Full Names -->
-          <div class="form-group">
-            <div class="form-lbl">Full Names<span>*</span></div>
-            <div class="finput-icon-wrap">
-              <input class="finput" type="text" id="fullName" placeholder="e.g. Tatenda Mutumbami" autocomplete="name" autocapitalize="words">
-              <div class="finput-icon" id="nameIcon" style="display:none"></div>
-            </div>
-            <div class="field-status" id="nameStatus"></div>
+    <!-- ═══ STEP 2: LOAN SETUP ═══ -->
+    <div class="step-pane" id="pane1">
+      <div>
+        <div class="sec-lbl">Loan Amount</div>
+        <div class="card">
+          <div class="amount-display">
+            <div><span class="amount-cur">USD </span><span class="amount-val" id="amtDisplay">500</span></div>
+            <div class="amount-label" id="amtLabel">Adjust with the slider below</div>
           </div>
-
-          <!-- Phone Number — custom keyboard -->
-          <div class="form-group">
-            <div class="form-lbl">Mobile Number<span>*</span></div>
-            <div class="phone-display" id="phoneCard" onclick="kbOpen()">
-              <div class="ph-prefix"><span class="ph-flag">🇿🇼</span><span class="ph-code">+263</span></div>
-              <div class="ph-val ph" id="phoneDisp">7XXXXXXXX</div>
-              <button class="ph-clear" id="phoneClear" onclick="event.stopPropagation();clearPhone()">
-                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div class="field-status" id="phoneStatus">Accepts 077, 078, 073, 071</div>
+          <div class="range-wrap">
+            <input type="range" id="loanSlider" min="500" max="50000" step="50" value="500">
+            <div class="range-labels"><span>$500</span><span id="sliderMaxLbl">$50,000</span></div>
           </div>
+          <div style="padding:10px 16px 8px">
+            <div class="sec-lbl" style="margin-bottom:8px">Repayment Period</div>
+            <div class="tenure-grid">
+              <button class="tchip on" data-m="6"><div class="tchip-n">6</div><div class="tchip-u">Months</div></button>
+              <button class="tchip" data-m="12"><div class="tchip-n">12</div><div class="tchip-u">Months</div></button>
+              <button class="tchip" data-m="24"><div class="tchip-n">24</div><div class="tchip-u">Months</div></button>
+              <button class="tchip" data-m="36"><div class="tchip-n">36</div><div class="tchip-u">Months</div></button>
+              <button class="tchip" data-m="60"><div class="tchip-n">60</div><div class="tchip-u">Months</div><div class="tchip-badge">Max</div></button>
+            </div>
+          </div>
+          <div class="repay-strip">
+            <div>
+              <div class="rs-lbl">Monthly Repayment</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:1px">at 2% p.m. flat rate</div>
+            </div>
+            <div style="text-align:right">
+              <div class="rs-val" id="monthlyRepay">USD 103.33</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-bottom"></div>
+    </div>
 
-          <!-- National ID — text input, client confirms format -->
-          <div class="form-group">
-            <div class="form-lbl">National ID Number<span>*</span></div>
-            <div style="display:flex;gap:8px">
-              <input class="finput" id="nidInput" type="text" placeholder="e.g. 63-123456A-75"
+    <!-- ═══ STEP 3: PERSONAL INFO ═══ -->
+    <div class="step-pane" id="pane2">
+      <div>
+        <div class="sec-lbl">Personal Details</div>
+        <div class="card">
+          <div class="card-body">
+
+            <div class="form-group">
+              <div class="form-lbl">Full Names<span>*</span></div>
+              <input class="finput" type="text" id="fullName"
+                placeholder="e.g. Tatenda Mutumbami"
+                autocomplete="name" autocapitalize="words">
+              <div class="field-status" id="nameStatus"></div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-lbl">Mobile Number<span>*</span></div>
+              <div class="phone-display" id="phoneCard" onclick="kbOpen()">
+                <div class="ph-prefix"><span class="ph-flag">🇿🇼</span><span class="ph-code">+263</span></div>
+                <div class="ph-val ph" id="phoneDisp">7XXXXXXXX</div>
+                <button class="ph-clear" id="phoneClear" onclick="event.stopPropagation();clearPhone()">
+                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="field-status" id="phoneStatus">Accepts 077, 078, 073, 071</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0">
+              <div class="form-lbl">National ID Number<span>*</span></div>
+              <input class="finput" id="nidInput" type="text"
+                placeholder="e.g. 63-123456A-75"
                 autocomplete="off" autocorrect="off" spellcheck="false"
-                style="flex:1;text-transform:uppercase;letter-spacing:.5px" maxlength="16">
-              <button type="button" id="nidConfirmBtn" disabled
-                style="flex-shrink:0;padding:0 16px;border-radius:12px;border:none;
-                background:var(--navy);color:#fff;font-family:var(--f);font-size:13px;
-                font-weight:600;cursor:pointer;transition:opacity .2s;touch-action:manipulation;
-                min-height:48px;">
-                Confirm
-              </button>
+                style="text-transform:uppercase;letter-spacing:.5px" maxlength="16">
+              <div class="field-status" id="nidStatus">Format: XX-NNNNNN(N)-L-DD · 11 characters</div>
+              <!-- Inline confirm panel — no browser popup -->
+              <div class="nid-confirm-panel" id="nidConfirmPanel">
+                <div class="nid-confirm-q">Please confirm your National ID:</div>
+                <div class="nid-confirm-val" id="nidConfirmVal"></div>
+                <div class="nid-confirm-btns">
+                  <button class="nid-btn ok" id="nidYes">✓ Yes, Correct</button>
+                  <button class="nid-btn edit" id="nidNo">✎ Edit</button>
+                </div>
+              </div>
             </div>
-            <div class="field-status" id="nidStatus">Zimbabwe National ID format: XX-NNNNNN(N)-L-DD</div>
-            <div class="form-hint" style="margin-top:2px">Enter your ID then tap Confirm. Client will verify format with you.</div>
-          </div>
 
-          <!-- Employment type -->
-          <div class="form-group">
-            <div class="form-lbl">Employment Status<span>*</span></div>
-            <select class="fselect" id="empType">
-              <option value="">Select employment status…</option>
-              <option value="employed">Employed (Salaried)</option>
-              <option value="self">Self-Employed (Stable Income)</option>
-            </select>
-            <div class="field-status" id="empStatus"></div>
           </div>
-
-          <!-- Monthly Net Income -->
-          <div class="form-group">
-            <div class="form-lbl">Monthly Net Income (USD)<span>*</span></div>
-            <div class="finput-icon-wrap">
-              <input class="finput" type="number" inputmode="decimal" id="income" placeholder="e.g. 800" min="100" max="50000" step="1">
-              <div class="finput-icon" id="incomeIcon" style="display:none"></div>
-            </div>
-            <div class="field-status" id="incomeStatus">Min $100 required · qualifies you for a loan</div>
-          </div>
-
-          <!-- Limit banner -->
-          <div class="limit-banner" id="limitBanner" style="display:none">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div class="limit-banner-txt" id="limitTxt"></div>
-          </div>
-
         </div>
       </div>
+      <div class="page-bottom"></div>
     </div>
 
-    <div class="page-bottom"></div>
   </div>
+</div>
 
-</div><!-- /page -->
-
-<!-- Sticky bottom action -->
-<div class="bottom-action">
-  <button class="submit-btn" id="submitBtn" disabled>Apply for Loan</button>
+<!-- Bottom action bar -->
+<div class="bottom-action" id="bottomAction">
+  <button class="back-btn-sm" id="backBtn" style="display:none" onclick="goBack()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="submit-btn" id="submitBtn">Check Eligibility</button>
 </div>
 
 <!-- KB backdrop -->
-<div class="kb-bd" id="kbBd" onclick="kbClose()"></div>
+<div class="kb-bd" id="kbBd"></div>
 
-<!-- Banking keyboard — used for phone + NID -->
+<!-- Banking keyboard -->
 <div class="kb" id="kb">
   <div class="kb-drag"></div>
-  <div class="kb-title" id="kbTitle">Enter Mobile Number</div>
-  <!-- Phone mode display -->
-  <div class="kb-disp-row" id="kbPhoneRow">
+  <div class="kb-title">Enter Mobile Number</div>
+  <div class="kb-disp-row">
     <div class="kb-disp-prefix"><span class="kb-disp-flag">🇿🇼</span><span class="kb-disp-code">+263</span></div>
     <div class="kb-disp-val ph" id="kbPhoneVal">7XXXXXXXX</div>
     <button class="kb-back" id="kbPhoneBack"><svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
   </div>
-  <!-- NID mode display -->
-  <div class="kb-nid-disp" id="kbNidRow" style="display:none">
-    <div class="kb-nid-val ph" id="kbNidVal">XX-NNNNNN-L-DD</div>
-    <button class="kb-back" id="kbNidBack" style="flex-shrink:0"><svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
-  </div>
-  <div class="kb-prog" id="kbProg"><div class="kb-prog-bar" id="kbProgBar"></div></div>
-  <div class="kb-grid" id="kbGrid">
+  <div class="kb-grid">
     <button class="kk" data-d="1">1</button><button class="kk" data-d="2">2</button><button class="kk" data-d="3">3</button>
     <button class="kk" data-d="4">4</button><button class="kk" data-d="5">5</button><button class="kk" data-d="6">6</button>
     <button class="kk" data-d="7">7</button><button class="kk" data-d="8">8</button><button class="kk" data-d="9">9</button>
     <button class="kk clr" id="kbClr">CLR</button>
     <button class="kk" data-d="0">0</button>
-    <button class="kk ghost" id="kbAlpha"></button>
+    <button class="kk ghost"></button>
   </div>
 </div>
 
 <script>
 'use strict';
-/* Status bar height */
-(function(){
-  var h=0;
-  if(window.screen&&screen.availTop>0)h=screen.availTop;
-  else if(window.visualViewport&&visualViewport.offsetTop>0)h=visualViewport.offsetTop;
-  if(h)document.documentElement.style.setProperty('--sb',h+'px');
-})();
+(function(){var h=0;if(window.screen&&screen.availTop>0)h=screen.availTop;else if(window.visualViewport&&visualViewport.offsetTop>0)h=visualViewport.offsetTop;if(h)document.documentElement.style.setProperty('--sb',h+'px');})();
 function hap(t){if(!navigator.vibrate)return;try{navigator.vibrate(t);}catch(e){}}
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    LOAN CALCULATION
-══════════════════════════════════════ */
-var RATE = 0.02;          /* 2 % per month flat */
-var loanAmt = 500;
-var tenureMonths = 6;
+══════════════════════════════ */
+var RATE=0.02;
+var loanAmt=500, tenureMonths=6;
 
 function calcRepay(){
-  /* total = principal + flat interest; divide by months */
-  return Math.round((loanAmt*(1 + RATE*tenureMonths))/tenureMonths * 100)/100;
+  return Math.round((loanAmt*(1+RATE*tenureMonths))/tenureMonths*100)/100;
 }
+function fmt2(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtUSD(n){return '$'+n.toLocaleString('en-US');}
 
-function fmt2(n){
-  return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-/* Update slider fill % relative to current slider min/max */
 function sliderFill(){
   var sl=document.getElementById('loanSlider');
-  var mn=parseFloat(sl.min)||500;
-  var mx=parseFloat(sl.max)||10000;
+  var mn=parseFloat(sl.min)||500, mx=parseFloat(sl.max)||50000;
   var pct=mx>mn?((loanAmt-mn)/(mx-mn)*100).toFixed(1)+'%':'0%';
   sl.style.setProperty('--pct',pct);
 }
 
 function updateLoanUI(){
   document.getElementById('amtDisplay').textContent=loanAmt.toLocaleString();
-  document.getElementById('badgeAmt').textContent='$'+loanAmt.toLocaleString();
-  var repay=calcRepay();
-  document.getElementById('monthlyRepay').textContent='USD '+fmt2(repay);
-  /* update range label to show current max */
-  var sl=document.getElementById('loanSlider');
-  var maxLbl=document.querySelector('.range-labels span:last-child');
-  if(maxLbl)maxLbl.textContent='$'+parseInt(sl.max).toLocaleString();
+  document.getElementById('badgeAmt').textContent=fmtUSD(loanAmt);
+  document.getElementById('monthlyRepay').textContent='USD '+fmt2(calcRepay());
   sliderFill();
-  checkAllValid();
+  /* refresh installment in eligibility sub if visible */
+  refreshEligDisplay();
 }
+
+/* Tenure chips */
+document.querySelectorAll('.tchip').forEach(function(c){
+  c.addEventListener('click',function(){
+    tenureMonths=parseInt(c.dataset.m);
+    document.querySelectorAll('.tchip').forEach(function(x){x.classList.remove('on');});
+    c.classList.add('on');
+    updateLoanUI();
+    hap(8);
+  });
+});
 
 /* Slider */
 document.getElementById('loanSlider').addEventListener('input',function(){
@@ -543,88 +472,182 @@ document.getElementById('loanSlider').addEventListener('input',function(){
   hap(3);
 });
 
-/* Tenure chips */
-document.querySelectorAll('.tchip').forEach(function(c){
-  c.addEventListener('click',function(){
-    tenureMonths=parseInt(c.dataset.m);
-    document.querySelectorAll('.tchip').forEach(function(x){x.classList.remove('on');});
-    c.classList.add('on');
-    updateLoanUI();
-    /* Refresh income status line so monthly installment updates live */
-    refreshIncomeStatus();
-    hap(8);
-  });
-});
-
-/* ══════════════════════════════════════
-   INCOME → LOAN LIMIT
-══════════════════════════════════════ */
+/* ══════════════════════════════
+   INCOME → ELIGIBILITY
+══════════════════════════════ */
+/* Max $50,000; multiplier 5× income floored to $50 */
 function getIncomeLimit(){
   var inc=parseFloat(document.getElementById('income').value)||0;
   if(inc<100)return 0;
-  /* $100 → $500, scaling 5× income, floor to $50, cap $10,000 */
-  return Math.min(Math.max(Math.floor(inc*5/50)*50, 500), 10000);
+  return Math.min(Math.max(Math.floor(inc*5/50)*50, 500), 50000);
 }
 
-function applyIncomeLimit(){
+function refreshEligDisplay(){
   var inc=parseFloat(document.getElementById('income').value)||0;
-  var incOK=inc>=100;
-  var loanSec=document.getElementById('loanSection');
-  var banner=document.getElementById('limitBanner');
-  var txt=document.getElementById('limitTxt');
+  if(inc<100)return;
+  var limit=getIncomeLimit();
+  document.getElementById('eligAmt').textContent=fmtUSD(limit);
+  document.getElementById('eligSub').textContent=
+    'Repayment from USD '+fmt2(calcRepayFor(500,tenureMonths))+'/mo (min) · '+
+    'USD '+fmt2(calcRepayFor(limit,tenureMonths))+'/mo (max) over '+tenureMonths+' months';
+}
 
-  if(!incOK){
-    loanSec.style.display='none';
-    banner.style.display='none';
-    return;
-  }
+function calcRepayFor(amt,months){
+  return Math.round((amt*(1+RATE*months))/months*100)/100;
+}
 
-  /* Show loan section */
-  loanSec.style.display='';
+function checkEligibility(){
+  var inc=parseFloat(document.getElementById('income').value)||0;
+  var emp=document.getElementById('empType').value;
+  var res=document.getElementById('eligResult');
+  var tag=document.getElementById('eligTag');
+  var headline=document.getElementById('eligHeadline');
+  var sub=document.getElementById('eligSub');
+  var chips=document.getElementById('eligChips');
+
+  if(!emp||inc<100){res.className='elig-result';return;}
 
   var limit=getIncomeLimit();
-  var sl=document.getElementById('loanSlider');
+  res.className='elig-result ok show';
+  tag.textContent='✓ Eligible';
+  headline.innerHTML='You qualify for up to <span id="eligAmt">'+fmtUSD(limit)+'</span>';
+  sub.textContent=
+    'Based on your '+( emp==='employed'?'salary':'income')+' of '+fmtUSD(inc)+
+    '/month. Repayment from USD '+fmt2(calcRepayFor(500,tenureMonths))+'/mo over '+tenureMonths+' months.';
+  chips.innerHTML=
+    '<span class="elig-chip ok">'+fmtUSD(limit)+' max</span>'+
+    '<span class="elig-chip ok">Up to 60 months</span>'+
+    '<span class="elig-chip ok">'+(emp==='employed'?'Salaried':'Self-Employed')+'</span>';
 
-  /* Update slider max to income limit */
-  sl.max=limit;
-  sl.min=500;
-
-  /* Clamp current loan amount */
-  if(loanAmt<500){loanAmt=500;}
-  if(loanAmt>limit){loanAmt=limit;}
-  sl.value=loanAmt;
-  updateLoanUI();
-
-  /* Show banner */
-  banner.style.display='flex';
-  if(loanAmt<=limit){
-    txt.innerHTML='Income <strong>$'+inc.toLocaleString()+'</strong> → max loan <strong>$'+limit.toLocaleString()+'</strong>. Monthly repayment: <strong>USD '+fmt2(calcRepay())+'</strong>.';
-    banner.style.borderLeftColor='var(--ok)';
-    banner.style.background='var(--ok2)';
-    banner.querySelector('svg').style.stroke='var(--ok)';
-    txt.style.color='var(--ok)';
-  }
+  /* Unlock next button */
+  document.getElementById('submitBtn').disabled=false;
 }
 
-/* ══════════════════════════════════════
-   FORM VALIDATION HELPERS
-══════════════════════════════════════ */
-var NETS=['071','077','078','073'];
-var phoneDigits='', phoneOK=false;
-var nidRaw='',      nidOK=false;
-
-function setFieldStatus(id,ok,okMsg,errMsg){
-  var el=document.getElementById(id); if(!el)return;
-  if(ok===null){
-    el.className='field-status';
-    el.innerHTML=okMsg?'<span>'+okMsg+'</span>':'';
-  }else if(ok){
-    el.className='field-status ok';
-    el.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>'+okMsg+'</span>';
+document.getElementById('income').addEventListener('input',function(){
+  var v=parseFloat(this.value);
+  var ok=v>=100;
+  if(!this.value){
+    setFieldStatus('incomeStatus',null,'Min $100/month required','');
+    setInputState(this,null);
+    document.getElementById('eligResult').className='elig-result';
+    document.getElementById('submitBtn').disabled=true;
   }else{
-    el.className='field-status err';
-    el.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>'+errMsg+'</span>';
+    setFieldStatus('incomeStatus',ok,
+      ok?'Income accepted':'Minimum income is $100/month',
+      'Minimum income is $100/month');
+    setInputState(this,ok);
+    if(ok&&document.getElementById('empType').value)checkEligibility();
+    else document.getElementById('eligResult').className='elig-result';
+    document.getElementById('submitBtn').disabled=!(ok&&document.getElementById('empType').value);
   }
+});
+
+document.getElementById('empType').addEventListener('change',function(){
+  var ok=this.value!=='';
+  setFieldStatus('empStatus',ok,
+    this.value==='employed'?'Employed — salary slip required':'Self-employed — 3-month bank statement',
+    '');
+  var inc=parseFloat(document.getElementById('income').value)||0;
+  if(ok&&inc>=100)checkEligibility();
+  else document.getElementById('eligResult').className='elig-result';
+  document.getElementById('submitBtn').disabled=!(ok&&inc>=100);
+});
+
+/* ══════════════════════════════
+   STEP NAVIGATION
+══════════════════════════════ */
+var currentStep=0;
+var STEPS=3;
+
+function updateStepBar(step){
+  ['sd0','sd1','sd2'].forEach(function(id,i){
+    var d=document.getElementById(id);
+    var l=document.getElementById('sl'+i);
+    d.className='sbar-dot'+(i<step?' done':i===step?' active':'');
+    l.className='sbar-lbl'+(i<step?' done':i===step?' active':'');
+  });
+  ['sline0','sline1'].forEach(function(id,i){
+    document.getElementById(id).className='sbar-line'+(i<step?' done':'');
+  });
+}
+
+function goToStep(step,dir){
+  var panes=document.querySelectorAll('.step-pane');
+  panes[currentStep].classList.remove('active','back');
+  panes[currentStep].style.display='none';
+  currentStep=step;
+  panes[step].style.display='flex';
+  panes[step].classList.remove('active','back');
+  void panes[step].offsetWidth; /* force reflow for animation */
+  panes[step].classList.add(dir==='back'?'back':'active');
+  updateStepBar(step);
+  /* Update button label + back visibility */
+  var btn=document.getElementById('submitBtn');
+  var bk=document.getElementById('backBtn');
+  bk.style.display=step>0?'flex':'none';
+  if(step===0){btn.textContent='Check Eligibility';btn.disabled=true;}
+  else if(step===1){btn.textContent='Continue';btn.disabled=false;}
+  else if(step===2){btn.textContent='Apply for Loan';btn.disabled=!step3Valid();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goBack(){
+  if(currentStep>0)goToStep(currentStep-1,'back');
+}
+
+document.getElementById('submitBtn').addEventListener('click',function(){
+  if(this.disabled)return;
+  if(currentStep===0){
+    /* Advance to loan setup — init slider to income limit */
+    var limit=getIncomeLimit();
+    var sl=document.getElementById('loanSlider');
+    sl.max=limit;
+    sl.min=500;
+    loanAmt=Math.min(Math.max(loanAmt,500),limit);
+    sl.value=loanAmt;
+    document.getElementById('sliderMaxLbl').textContent=fmtUSD(limit);
+    document.getElementById('amtLabel').textContent='Max '+fmtUSD(limit)+' based on your income';
+    updateLoanUI();
+    goToStep(1,'fwd');
+  }else if(currentStep===1){
+    goToStep(2,'fwd');
+  }else if(currentStep===2){
+    doSubmit();
+  }
+});
+
+/* ══════════════════════════════
+   STEP 3 VALIDATION
+══════════════════════════════ */
+var NETS=['071','077','078','073'];
+var phoneDigits='',phoneOK=false;
+var nidRaw='',nidOK=false;
+
+function step3Valid(){
+  var name=document.getElementById('fullName').value.trim();
+  var nameOK=name.length>=3&&/\s/.test(name)&&/^[A-Za-z\s\-'.]+$/.test(name);
+  return nameOK&&phoneOK&&nidOK;
+}
+function checkStep3(){
+  if(currentStep===2)document.getElementById('submitBtn').disabled=!step3Valid();
+}
+
+document.getElementById('fullName').addEventListener('input',function(){
+  var v=this.value.trim();
+  var ok=v.length>=3&&/\s/.test(v)&&/^[A-Za-z\s\-'.]+$/.test(v);
+  setFieldStatus('nameStatus',v.length<1?null:ok,'First and last name','Letters only, include surname');
+  setInputState(this,v.length<1?null:ok);
+  checkStep3();
+});
+
+/* ══════════════════════════════
+   HELPERS
+══════════════════════════════ */
+function setFieldStatus(id,ok,okMsg,errMsg){
+  var el=document.getElementById(id);if(!el)return;
+  if(ok===null){el.className='field-status';el.innerHTML=okMsg?'<span>'+okMsg+'</span>':'';}
+  else if(ok){el.className='field-status ok';el.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>'+okMsg+'</span>';}
+  else{el.className='field-status err';el.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>'+errMsg+'</span>';}
 }
 function setInputState(el,ok){
   el.classList.remove('ok','err');
@@ -632,70 +655,9 @@ function setInputState(el,ok){
   else if(ok===false)el.classList.add('err');
 }
 
-function checkAllValid(){
-  var name=document.getElementById('fullName').value.trim();
-  var nameOK=name.length>=3&&/\s/.test(name)&&/^[A-Za-z\s\-'.]+$/.test(name);
-  var incVal=parseFloat(document.getElementById('income').value)||0;
-  var incOK=incVal>=100;
-  var empOK=document.getElementById('empType').value!=='';
-  var incLimit=getIncomeLimit();
-  var amtOK=incLimit>0&&loanAmt>=500&&loanAmt<=incLimit;
-  var all=nameOK&&phoneOK&&nidOK&&empOK&&incOK&&amtOK;
-  document.getElementById('submitBtn').disabled=!all;
-}
-
-/* Full name */
-document.getElementById('fullName').addEventListener('input',function(){
-  var v=this.value.trim();
-  var ok=v.length>=3&&/\s/.test(v)&&/^[A-Za-z\s\-'.]+$/.test(v);
-  setFieldStatus('nameStatus',v.length<1?null:ok,'First and last name required','Letters only, must include surname');
-  setInputState(this,v.length<1?null:ok);
-  checkAllValid();
-});
-
-/* Income */
-function refreshIncomeStatus(){
-  var el=document.getElementById('income');
-  if(!el)return;
-  var v=parseFloat(el.value);
-  var ok=v>=100;
-  if(!el.value||!v){return;} /* nothing to update if no income yet */
-  var lim=getIncomeLimit();
-  var repay=calcRepay();
-  /* Show monthly installment inline with the income field status */
-  setFieldStatus('incomeStatus',ok,
-    'Up to $'+lim.toLocaleString()+' · Installment: <strong>USD '+fmt2(repay)+'</strong>/mo × '+tenureMonths+'mo',
-    'Minimum income is $100');
-}
-
-document.getElementById('income').addEventListener('input',function(){
-  var v=parseFloat(this.value);
-  var ok=v>=100;
-  if(!this.value){
-    setFieldStatus('incomeStatus',null,'Min $100 required · unlocks loan section','');
-    setInputState(this,null);
-    document.getElementById('loanSection').style.display='none';
-    document.getElementById('limitBanner').style.display='none';
-  }else{
-    setInputState(this,ok);
-    applyIncomeLimit();
-    refreshIncomeStatus();
-  }
-  checkAllValid();
-});
-
-/* Employment */
-document.getElementById('empType').addEventListener('change',function(){
-  var ok=this.value!=='';
-  setFieldStatus('empStatus',ok,
-    this.value==='employed'?'Salaried — salary slip may be required':'Self-employed — 3-month bank statement required',
-    '');
-  checkAllValid();
-});
-
-/* ══════════════════════════════════════
-   PHONE — CUSTOM BANKING KEYBOARD
-══════════════════════════════════════ */
+/* ══════════════════════════════
+   PHONE KEYBOARD
+══════════════════════════════ */
 function kbOpen(){
   document.getElementById('kbBd').classList.add('on');
   document.getElementById('kb').classList.add('on');
@@ -707,98 +669,56 @@ function kbClose(){
   document.getElementById('kbBd').classList.remove('on');
   if(!phoneOK)document.getElementById('phoneCard').classList.remove('foc');
 }
-
 function refreshKbDisplay(){
   var kv=document.getElementById('kbPhoneVal');
-  if(kv){kv.textContent=phoneDigits||'7XXXXXXXX';kv.className='kb-disp-val'+(phoneDigits?'':' ph');}
+  kv.textContent=phoneDigits||'7XXXXXXXX';kv.className='kb-disp-val'+(phoneDigits?'':' ph');
   var pd=document.getElementById('phoneDisp');
-  if(pd){pd.textContent=phoneDigits||'7XXXXXXXX';pd.className=phoneDigits?'ph-val':'ph-val ph';}
-  var cl=document.getElementById('phoneClear');
-  if(cl)cl.classList.toggle('show',phoneDigits.length>0);
+  pd.textContent=phoneDigits||'7XXXXXXXX';pd.className=phoneDigits?'ph-val':'ph-val ph';
+  document.getElementById('phoneClear').classList.toggle('show',phoneDigits.length>0);
 }
-
 function kbPush(digit){
   if(phoneDigits.length>=9||phoneOK)return;
-  /* First digit must be 7 (Zim mobile numbers start 07X) */
   if(phoneDigits.length===0&&digit!=='7'){
-    /* Show gentle shake */
     var kv=document.getElementById('kbPhoneVal');
-    if(kv){kv.style.color='var(--err)';setTimeout(function(){kv.style.color='';},500);}
+    kv.style.color='var(--err)';setTimeout(function(){kv.style.color='';},500);
     return;
   }
-  phoneDigits+=digit;
-  hap(8);
-  refreshKbDisplay();
-  checkPhone();
-}
-
-function kbDel(){
-  if(!phoneDigits.length)return;
-  phoneDigits=phoneDigits.slice(0,-1);
-  hap(8);
-  refreshKbDisplay();
-  /* Reset OK state if editing */
-  if(phoneOK){
-    phoneOK=false;
-    document.getElementById('phoneCard').className='phone-display foc';
-    setFieldStatus('phoneStatus',null,'Accepts 077, 078, 073, 071','');
-    checkAllValid();
-  }
-  setPhoneTag();
-}
-
-function checkPhone(){
+  phoneDigits+=digit;hap(8);refreshKbDisplay();
   if(phoneDigits.length===9){
     var m='0'+phoneDigits;
-    var isNet=NETS.some(function(p){return m.startsWith(p);});
-    if(isNet){
-      phoneOK=true;
-      kbClose();
+    if(NETS.some(function(p){return m.startsWith(p);})){
+      phoneOK=true;kbClose();
       document.getElementById('phoneCard').className='phone-display ok';
       setFieldStatus('phoneStatus',true,'Mobile number accepted','');
-      hap([10,50,10]);
-      checkAllValid();
+      hap([10,50,10]);checkStep3();
     }else{
-      /* Not Econet/ZW — show error but keep keyboard open */
-      setFieldStatus('phoneStatus',false,'','Not a supported network — use 077, 078, 073, 071');
+      setFieldStatus('phoneStatus',false,'','Not a supported network — use 077,078,073,071');
       document.getElementById('phoneCard').classList.add('err');
       hap([40,30,40]);
     }
   }else{
-    setPhoneTag();
+    var d=phoneDigits,n0='0'+d;
+    var is07=n0.startsWith('07')&&d.length>=2;
+    var isNet=NETS.some(function(p){return n0.startsWith(p);});
+    var s=document.getElementById('phoneStatus');
+    if(is07&&!isNet)s.innerHTML='<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--err);fill:none;stroke-width:2.5;stroke-linecap:round;flex-shrink:0"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--err)">Unsupported network</span>';
+    else{s.className='field-status';s.innerHTML='<span>'+d.length+' of 9 digits</span>';}
   }
 }
-
-function setPhoneTag(){
-  var d=phoneDigits;
-  var n0='0'+d;
-  var isNet=NETS.some(function(p){return n0.startsWith(p);});
-  var is07=n0.startsWith('07')&&d.length>=2;
-  var s=document.getElementById('phoneStatus');
-  if(!s)return;
-  if(!d.length){s.className='field-status';s.innerHTML='<span>Accepts 077, 078, 073, 071</span>';}
-  else if(is07&&!isNet){s.className='field-status err';s.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Unsupported network</span>';}
-  else{s.className='field-status';s.innerHTML='<span>'+d.length+' of 9 digits</span>';}
+function kbDel(){
+  if(!phoneDigits.length)return;
+  if(phoneOK){phoneOK=false;document.getElementById('phoneCard').className='phone-display foc';setFieldStatus('phoneStatus',null,'Accepts 077,078,073,071','');checkStep3();}
+  phoneDigits=phoneDigits.slice(0,-1);hap(8);refreshKbDisplay();
 }
-
 function clearPhone(){
   phoneDigits='';phoneOK=false;
   document.getElementById('phoneCard').className='phone-display';
-  refreshKbDisplay();
-  setFieldStatus('phoneStatus',null,'Accepts 077, 078, 073, 071','');
-  checkAllValid();
+  refreshKbDisplay();setFieldStatus('phoneStatus',null,'Accepts 077,078,073,071','');checkStep3();
 }
-
-/* Wire keyboard keys */
-document.querySelectorAll('.kk[data-d]').forEach(function(k){
-  k.addEventListener('click',function(){kbPush(k.dataset.d);});
-});
+document.querySelectorAll('.kk[data-d]').forEach(function(k){k.addEventListener('click',function(){kbPush(k.dataset.d);});});
 document.getElementById('kbPhoneBack').addEventListener('click',kbDel);
-document.getElementById('kbClr').addEventListener('click',function(){
-  clearPhone();
-  refreshKbDisplay();
-});
-/* Ripple on keys */
+document.getElementById('kbClr').addEventListener('click',function(){clearPhone();refreshKbDisplay();});
+document.getElementById('kbBd').addEventListener('click',kbClose);
 document.querySelectorAll('.kk:not(.ghost),.kb-back').forEach(function(b){
   b.addEventListener('pointerdown',function(e){
     var r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2;
@@ -808,120 +728,87 @@ document.querySelectorAll('.kk:not(.ghost),.kb-back').forEach(function(b){
   },{passive:true});
 });
 
-/* Backdrop tap closes kb */
-document.getElementById('kbBd').addEventListener('click',kbClose);
-
-/* ══════════════════════════════════════
-   NATIONAL ID — TEXT INPUT + CONFIRM
-══════════════════════════════════════ */
+/* ══════════════════════════════
+   NATIONAL ID — INLINE CONFIRM
+══════════════════════════════ */
+function nidRawLen(v){return v.replace(/[\s\-]/g,'').length;}
 function nidLooksValid(v){
-  /* Strip separators (spaces, dashes) to get raw alphanumeric length */
   var c=v.replace(/[\s\-]/g,'');
-  /* ZW National ID raw: 2 location + 6-7 sequence + 1 letter + 2 citizenship = 11-12 chars */
-  var hasDigits=/\d/.test(c);
-  var hasLetter=/[A-Z]/i.test(c);
-  var goodLen=c.length>=11&&c.length<=13;
-  return goodLen&&hasDigits&&hasLetter;
-}
-function nidRawLen(v){
-  return v.replace(/[\s\-]/g,'').length;
+  return c.length>=11&&c.length<=13&&/\d/.test(c)&&/[A-Z]/i.test(c);
 }
 
 document.getElementById('nidInput').addEventListener('input',function(){
-  var v=this.value.toUpperCase();
-  this.value=v;
-  var btn=document.getElementById('nidConfirmBtn');
-  var ok=nidLooksValid(v);
+  var v=this.value.toUpperCase();this.value=v;
   var rawLen=nidRawLen(v);
-  btn.disabled=!ok;
-  /* If was confirmed, un-confirm on edit */
+  var ok=nidLooksValid(v);
+  /* If was confirmed, reset on edit */
   if(nidOK){
     nidOK=false;nidRaw='';
-    this.classList.remove('ok');
-    btn.textContent='Confirm';btn.style.background='var(--navy)';
-    checkAllValid();
-  }
-  /* Show progressive length feedback */
-  if(v.length<1){
-    setFieldStatus('nidStatus',null,'Format: XX-NNNNNN(N)-L-DD · 11 characters required','');
-  }else if(rawLen<11){
-    setFieldStatus('nidStatus',null,''+rawLen+' of 11 required characters entered','');
-  }else if(rawLen>13){
-    setFieldStatus('nidStatus',false,'','Too long — ZW National ID is 11–12 characters (excl. dashes)');
-    setInputState(this,false);
-  }else if(!ok){
-    setFieldStatus('nidStatus',null,'Must contain digits and a letter','');
-  }else{
-    setFieldStatus('nidStatus',null,'✓ Length correct — tap Confirm when ready','');
-    setInputState(this,null); /* neutral — not confirmed yet */
-  }
-});
-
-document.getElementById('nidConfirmBtn').addEventListener('click',function(){
-  var inp=document.getElementById('nidInput');
-  var v=inp.value.trim().toUpperCase();
-  if(!nidLooksValid(v)){
-    setFieldStatus('nidStatus',false,'','ID too short or invalid — check and re-enter');
-    setInputState(inp,false);
-    return;
-  }
-  /* Native confirm dialog — customer verifies their own entry */
-  if(confirm('Confirm your National ID Number:\n\n  '+v+'\n\nIs this correct?')){
-    nidOK=true;nidRaw=v;
-    inp.readOnly=true;
-    setInputState(inp,true);
-    this.textContent='✓ Done';
-    this.classList.add('done');
-    this.disabled=true;
-    setFieldStatus('nidStatus',true,'National ID confirmed — tap field to edit','');
-    hap([10,50,10]);
-    checkAllValid();
-  }
-});
-
-/* Tap confirmed NID to re-edit */
-document.getElementById('nidInput').addEventListener('click',function(){
-  if(nidOK){
-    nidOK=false;nidRaw='';
-    this.readOnly=false;
     setInputState(this,null);
-    var btn=document.getElementById('nidConfirmBtn');
-    btn.textContent='Confirm';
-    btn.style.background='var(--navy)';
-    btn.style.opacity='1';
-    btn.style.pointerEvents='auto';
-    setFieldStatus('nidStatus',null,'Edit then tap Confirm again','');
-    checkAllValid();
-    this.focus();
+    document.getElementById('nidConfirmPanel').className='nid-confirm-panel';
+    checkStep3();
+  }
+  if(v.length<1){setFieldStatus('nidStatus',null,'Format: XX-NNNNNN(N)-L-DD · 11 characters','');}
+  else if(rawLen<11){setFieldStatus('nidStatus',null,rawLen+' of 11 characters entered','');}
+  else if(rawLen>13){setFieldStatus('nidStatus',false,'','Too long — ZW ID is 11–12 characters (excl. dashes)');setInputState(this,false);}
+  else if(!ok){setFieldStatus('nidStatus',null,'Must contain digits and at least one letter','');}
+  else{
+    /* Show inline confirm panel */
+    setFieldStatus('nidStatus',null,'','');
+    document.getElementById('nidConfirmVal').textContent=v;
+    document.getElementById('nidConfirmPanel').className='nid-confirm-panel show';
+    this.blur();
   }
 });
 
-/* ══════════════════════════════════════
+document.getElementById('nidYes').addEventListener('click',function(){
+  var v=document.getElementById('nidInput').value.trim().toUpperCase();
+  nidOK=true;nidRaw=v;
+  document.getElementById('nidInput').readOnly=true;
+  setInputState(document.getElementById('nidInput'),true);
+  setFieldStatus('nidStatus',true,'National ID confirmed — tap to edit','');
+  document.getElementById('nidConfirmPanel').className='nid-confirm-panel';
+  hap([10,50,10]);checkStep3();
+});
+
+document.getElementById('nidNo').addEventListener('click',function(){
+  document.getElementById('nidConfirmPanel').className='nid-confirm-panel';
+  var inp=document.getElementById('nidInput');
+  inp.readOnly=false;inp.focus();
+  setFieldStatus('nidStatus',null,'Edit your ID and re-enter','');
+});
+
+/* Tap to re-edit confirmed NID */
+document.getElementById('nidInput').addEventListener('click',function(){
+  if(!nidOK)return;
+  nidOK=false;nidRaw='';
+  this.readOnly=false;setInputState(this,null);
+  setFieldStatus('nidStatus',null,'Edit then re-confirm','');
+  document.getElementById('nidConfirmPanel').className='nid-confirm-panel';
+  checkStep3();this.focus();
+});
+
+/* ══════════════════════════════
    SUBMIT
-══════════════════════════════════════ */
-document.getElementById('submitBtn').addEventListener('click',function(){
-  if(this.disabled)return;
-  var name=document.getElementById('fullName').value.trim();
+══════════════════════════════ */
+function doSubmit(){
   var inc=parseFloat(document.getElementById('income').value)||0;
   var emp=document.getElementById('empType').value;
-  var repay=calcRepay();
   sessionStorage.setItem('nmbLoan',JSON.stringify({
-    name:name,
+    name:document.getElementById('fullName').value.trim(),
     phone:'+263'+phoneDigits,
     phoneDisplay:'+263 '+phoneDigits.slice(0,2)+'•••'+phoneDigits.slice(-4),
-    nid:nidRaw,
-    emp:emp,
-    income:inc,
-    amount:loanAmt,
-    tenure:tenureMonths,
-    monthly:repay,
-    rate:(RATE*100).toFixed(0),
+    nid:nidRaw,emp:emp,income:inc,
+    amount:loanAmt,tenure:tenureMonths,
+    monthly:calcRepay(),rate:(RATE*100).toFixed(0),
     submittedAt:new Date().toISOString()
   }));
   hap([10,50,10]);
   document.getElementById('curtain').classList.add('show');
   setTimeout(function(){window.location.href='login.html';},900);
-});
+}
+
+/* Ripple on submit */
 document.getElementById('submitBtn').addEventListener('pointerdown',function(e){
   var r=this.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2;
   var rip=document.createElement('span');rip.className='rip';
@@ -929,8 +816,13 @@ document.getElementById('submitBtn').addEventListener('pointerdown',function(e){
   this.appendChild(rip);rip.addEventListener('animationend',function(){rip.remove();});
 },{passive:true});
 
-/* Initial state */
+/* Init */
 updateLoanUI();
+/* Disable next until eligibility filled */
+document.getElementById('submitBtn').disabled=true;
+/* Hide panes 1 and 2 initially */
+document.getElementById('pane1').style.display='none';
+document.getElementById('pane2').style.display='none';
 </script>
 </body>
 </html>
