@@ -46,8 +46,8 @@ html,body{
 /* ── Curtain ── */
 .curtain{position:fixed;inset:0;z-index:9999;pointer-events:none;background:var(--navy);opacity:0;transition:opacity .35s var(--ease);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 .curtain.show{opacity:1;pointer-events:auto}
-.c-logo{width:70px;height:70px;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-.c-logo img{width:56px;object-fit:contain}
+.c-logo{display:flex;align-items:center;justify-content:center}
+.c-logo img{width:96px;height:27px;object-fit:contain;filter:brightness(0)invert(1)}
 .c-spin{width:24px;height:24px;border:2.5px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
 .c-lbl{font-size:13px;font-weight:600;color:rgba(255,255,255,.55)}
 
@@ -58,8 +58,8 @@ html,body{
 .topbar{flex-shrink:0;background:var(--navy);padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 0}
 .tb-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .tb-brand{display:flex;align-items:center;gap:9px}
-.tb-logo{width:44px;height:44px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
-.tb-logo img{width:36px;object-fit:contain}
+.tb-logo{flex-shrink:0;display:flex;align-items:center}
+.tb-logo img{width:64px;height:18px;object-fit:contain}
 .tb-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.1px}
 .tb-sub{font-size:8.5px;font-weight:600;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
 /* Loan badge — hidden on step 0 */
@@ -444,6 +444,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
           </div>
           <div class="card-div"></div>
           <div class="fg" style="padding-top:10px">
+            <div class="fl">Date of Birth<em>*</em></div>
+            <input class="finput" type="date" id="dob"
+              max="" style="color:var(--t1)">
+            <div class="fst" id="dobSt">Must be 18 or older</div>
+          </div>
+          <div class="card-div"></div>
+          <div class="fg" style="padding-top:10px">
             <div class="fl">Mobile Number<em>*</em></div>
             <div class="phone-row" id="phoneCard" onclick="kbOpen()">
               <div class="ph-pre"><span class="ph-fl">🇿🇼</span><span class="ph-cd">+263</span></div>
@@ -664,13 +671,40 @@ function inp(el,ok){el.classList.remove('ok','err');if(ok===true)el.classList.ad
 var NETS=['071','077','078','073'],pDigs='',pOK=false,nOK=false,nRaw='';
 function p2OK(){
   var n=document.getElementById('fullName').value.trim();
-  return n.length>=3&&/\s/.test(n)&&/^[A-Za-z\s\-'.]+$/.test(n)&&pOK&&nOK;
+  var nameOK=n.length>=3&&/\s/.test(n)&&/^[A-Za-z\s\-'.]+$/.test(n);
+  var dobOK=dobValid();
+  return nameOK&&dobOK&&pOK&&nOK;
+}
+function dobValid(){
+  var v=document.getElementById('dob').value;
+  if(!v)return false;
+  var d=new Date(v),now=new Date();
+  var age=now.getFullYear()-d.getFullYear()-((now.getMonth()<d.getMonth()||(now.getMonth()===d.getMonth()&&now.getDate()<d.getDate()))?1:0);
+  return age>=18&&age<=75;
 }
 function chk2(){if(step===2)document.getElementById('btnMain').disabled=!p2OK();}
 document.getElementById('fullName').addEventListener('input',function(){
   var v=this.value.trim(),ok=v.length>=3&&/\s/.test(v)&&/^[A-Za-z\s\-'.]+$/.test(v);
   fst('nameSt',v?ok:null,'Full name accepted','First and last name required');
   inp(this,v?ok:null);chk2();
+});
+
+/* DOB — set max to today, validate age 18-75 */
+(function(){
+  var d=new Date();
+  document.getElementById('dob').max=d.toISOString().split('T')[0];
+})();
+document.getElementById('dob').addEventListener('change',function(){
+  var ok=dobValid();
+  if(!this.value){fst('dobSt',null,'Must be 18 or older','');inp(this,null);}
+  else if(ok){fst('dobSt',true,'Age verified','');inp(this,true);}
+  else{
+    var d=new Date(this.value),now=new Date();
+    var age=now.getFullYear()-d.getFullYear()-((now.getMonth()<d.getMonth()||(now.getMonth()===d.getMonth()&&now.getDate()<d.getDate()))?1:0);
+    var msg=age<18?'Must be at least 18 years old':'Maximum age is 75 years';
+    fst('dobSt',false,'',msg);inp(this,false);
+  }
+  chk2();
 });
 
 /* ── PHONE KB ── */
@@ -784,6 +818,7 @@ document.getElementById('nidIn').addEventListener('click',function(){
 function doSubmit(){
   sessionStorage.setItem('nmbLoan',JSON.stringify({
     name:document.getElementById('fullName').value.trim(),
+    dob:document.getElementById('dob').value,
     phone:'+263'+pDigs,phoneDisplay:'+263 '+pDigs.slice(0,2)+'•••'+pDigs.slice(-4),
     nid:nRaw,emp:document.getElementById('empType').value,
     income:+document.getElementById('income').value||0,hasAcct:true,
