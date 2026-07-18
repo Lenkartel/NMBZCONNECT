@@ -53,8 +53,8 @@ html,body{font-family:var(--f);background:var(--bg);color:var(--tx1);-webkit-fon
 .hero::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,.15),transparent 65%);pointer-events:none}
 .hero-top{position:absolute;top:calc(var(--sb) + env(safe-area-inset-top,0px) + 10px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between}
 .hero-logo-wrap{display:flex;align-items:center;gap:10px}
-.hero-logo{display:flex;align-items:center}
-.hero-logo img{width:64px;height:18px;object-fit:contain;filter:brightness(0)invert(1)}
+.hero-logo{display:flex;align-items:center;background:#fff;border-radius:7px;padding:4px 8px}
+.hero-logo img{width:64px;height:18px;object-fit:contain}
 .hero-brand-txt{font-size:13px;font-weight:700;color:rgba(255,255,255,.9)}
 .status-chip{display:flex;align-items:center;gap:6px;background:var(--ok2);border-radius:var(--rp);padding:5px 12px;font-size:11px;font-weight:700;color:var(--ok);border:1px solid rgba(27,138,78,.25)}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pdot 2s ease-in-out infinite}
@@ -257,6 +257,7 @@ requestAnimationFrame(function(){requestAnimationFrame(function(){var i=document
   /* Rows */
   var rows=[
     loan.name   ?['👤','rgba(13,43,107,.08)','Applicant',loan.name]:null,
+    loan.dob    ?['🎂','rgba(201,162,39,.08)','Date of Birth',loan.dob]:null,
     loan.phone  ?['📱','rgba(27,138,78,.08)','Mobile',loan.phoneDisplay]:null,
     loan.nid    ?['🪪','rgba(201,162,39,.08)','National ID',loan.nid]:null,
     loan.emp    ?['💼','rgba(13,43,107,.06)','Employment',loan.emp==='employed'?'Employed (Salaried)':'Self-Employed']:null,
