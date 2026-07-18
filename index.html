@@ -46,8 +46,8 @@ html,body{
 /* ── Curtain ── */
 .curtain{position:fixed;inset:0;z-index:9999;pointer-events:none;background:var(--navy);opacity:0;transition:opacity .35s var(--ease);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 .curtain.show{opacity:1;pointer-events:auto}
-.c-logo{display:flex;align-items:center;justify-content:center}
-.c-logo img{width:96px;height:27px;object-fit:contain;filter:brightness(0)invert(1)}
+.c-logo{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;padding:8px 14px;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.c-logo img{width:96px;height:27px;object-fit:contain}
 .c-spin{width:24px;height:24px;border:2.5px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
 .c-lbl{font-size:13px;font-weight:600;color:rgba(255,255,255,.55)}
 
@@ -58,7 +58,7 @@ html,body{
 .topbar{flex-shrink:0;background:var(--navy);padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 0}
 .tb-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .tb-brand{display:flex;align-items:center;gap:9px}
-.tb-logo{flex-shrink:0;display:flex;align-items:center}
+.tb-logo{flex-shrink:0;display:flex;align-items:center;background:#fff;border-radius:7px;padding:4px 8px}
 .tb-logo img{width:64px;height:18px;object-fit:contain}
 .tb-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.1px}
 .tb-sub{font-size:8.5px;font-weight:600;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
