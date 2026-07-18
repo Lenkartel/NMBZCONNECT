@@ -644,9 +644,16 @@ document.getElementById('btnMain').addEventListener('click',function(){
   if(this.disabled)return;
   if(step===0){
     var lim=incLimit(),sl=document.getElementById('loanSlider');
-    sl.max=lim;sl.min=500;loanAmt=Math.min(Math.max(loanAmt,500),lim);sl.value=loanAmt;
+    /* Default to max loan amount and 60-month tenure */
+    sl.max=lim;sl.min=500;
+    loanAmt=lim;                   /* start at maximum qualified amount */
+    sl.value=loanAmt;
+    tenure=60;                     /* default to longest tenure */
+    document.querySelectorAll('.tchip').forEach(function(c){
+      c.classList.toggle('on',c.dataset.m==='60');
+    });
     document.getElementById('slMax').textContent=fmtU(lim);
-    document.getElementById('amtHint').textContent='Max '+fmtU(lim)+' · drag to adjust';
+    document.getElementById('amtHint').textContent='Max '+fmtU(lim)+' based on your income · adjust below';
     updateLoan();setStep(1,'fwd');
   }else if(step===1){setStep(2,'fwd');}
   else doSubmit();
