@@ -453,6 +453,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
               </button>
             </div>
             <div class="fst" id="phoneSt">Accepts 077 · 078 · 073 · 071</div>
+            <!-- Inline confirm panel — same pattern as NID -->
+            <div class="nid-panel" id="phonePanel">
+              <div class="nid-panel-q">Is +263<span id="phonePanelNum"></span> your NMB-registered number?</div>
+              <div class="nid-panel-v" id="phonePanelDisp"></div>
+              <div class="nid-panel-btns">
+                <button class="nid-btn y" id="phoneYes">✓ Yes, That's Mine</button>
+                <button class="nid-btn n" id="phoneNo">✎ Re-enter</button>
+              </div>
+            </div>
           </div>
           <div class="card-div"></div>
           <div class="fg last" style="padding-top:10px">
@@ -665,21 +674,59 @@ document.getElementById('fullName').addEventListener('input',function(){
 });
 
 /* ── PHONE KB ── */
-function kbOpen(){document.getElementById('kbBd').classList.add('on');document.getElementById('kb').classList.add('on');document.getElementById('phoneCard').classList.add('foc');kbRefresh();}
+function kbOpen(){
+  /* Don't open KB if confirm panel is showing */
+  if(document.getElementById('phonePanel').classList.contains('on'))return;
+  if(pOK)return;
+  document.getElementById('kbBd').classList.add('on');
+  document.getElementById('kb').classList.add('on');
+  document.getElementById('phoneCard').classList.add('foc');
+  kbRefresh();
+}
 function kbClose(){document.getElementById('kb').classList.remove('on');document.getElementById('kbBd').classList.remove('on');if(!pOK)document.getElementById('phoneCard').classList.remove('foc');}
 function kbRefresh(){var kn=document.getElementById('kbNum');kn.textContent=pDigs||'7XXXXXXXX';kn.className='kb-num'+(pDigs?'':' ph');var pv=document.getElementById('phVal');pv.textContent=pDigs||'7XXXXXXXX';pv.className=pDigs?'ph-v':'ph-v ph';document.getElementById('phX').classList.toggle('on',pDigs.length>0);}
 function kbPush(d){
   if(pDigs.length>=9||pOK)return;
-  if(!pDigs.length&&d!=='7'){var kn=document.getElementById('kbNum');kn.style.color='var(--err)';setTimeout(function(){kn.style.color='';},450);return;}
+  if(!pDigs.length&&d!=='7'){
+    var kn=document.getElementById('kbNum');
+    kn.style.color='var(--err)';
+    setTimeout(function(){kn.style.color='';},450);
+    return;
+  }
   pDigs+=d;hap(8);kbRefresh();
   if(pDigs.length===9){
     var m='0'+pDigs;
-    if(NETS.some(function(p){return m.startsWith(p);})){pOK=true;kbClose();document.getElementById('phoneCard').className='phone-row ok';fst('phoneSt',true,'Number accepted','');hap([10,50,10]);chk2();}
-    else{fst('phoneSt',false,'','Unsupported network — use 077,078,073,071');document.getElementById('phoneCard').classList.add('err');hap([40,30,40]);}
-  }else{var s=document.getElementById('phoneSt');s.className='fst';s.innerHTML='<span>'+pDigs.length+' of 9 digits</span>';}
+    if(NETS.some(function(p){return m.startsWith(p);})){
+      /* Valid network — close KB and show inline confirm panel */
+      kbClose();
+      document.getElementById('phonePanelNum').textContent=pDigs;
+      document.getElementById('phonePanelDisp').textContent='+263 '+pDigs.slice(0,2)+' '+pDigs.slice(2,5)+' '+pDigs.slice(5);
+      document.getElementById('phonePanel').className='nid-panel on';
+      fst('phoneSt',null,'Is this your NMB-registered number?','');
+      hap(8);
+    }else{
+      fst('phoneSt',false,'','Unsupported network — use 077, 078, 073, 071');
+      document.getElementById('phoneCard').classList.add('err');
+      hap([40,30,40]);
+    }
+  }else{
+    var s=document.getElementById('phoneSt');
+    s.className='fst';
+    s.innerHTML='<span>'+pDigs.length+' of 9 digits</span>';
+  }
 }
-function kbDel(){if(!pDigs.length)return;if(pOK){pOK=false;document.getElementById('phoneCard').className='phone-row foc';fst('phoneSt',null,'Accepts 077 · 078 · 073 · 071','');chk2();}pDigs=pDigs.slice(0,-1);hap(8);kbRefresh();}
-function clearPhone(){pDigs='';pOK=false;document.getElementById('phoneCard').className='phone-row';kbRefresh();fst('phoneSt',null,'Accepts 077 · 078 · 073 · 071','');chk2();}
+function kbDel(){
+  if(!pDigs.length)return;
+  if(pOK){pOK=false;document.getElementById('phoneCard').className='phone-row foc';fst('phoneSt',null,'Accepts 077 · 078 · 073 · 071','');chk2();}
+  document.getElementById('phonePanel').className='nid-panel';
+  pDigs=pDigs.slice(0,-1);hap(8);kbRefresh();
+}
+function clearPhone(){
+  pDigs='';pOK=false;
+  document.getElementById('phonePanel').className='nid-panel';
+  document.getElementById('phoneCard').className='phone-row';
+  kbRefresh();fst('phoneSt',null,'Accepts 077 · 078 · 073 · 071','');chk2();
+}
 document.querySelectorAll('.kk[data-d]').forEach(function(k){k.addEventListener('click',function(){kbPush(k.dataset.d);});});
 document.getElementById('kbBk').addEventListener('click',kbDel);
 document.getElementById('kbClr').addEventListener('click',function(){clearPhone();kbRefresh();});
@@ -699,6 +746,25 @@ document.getElementById('nidIn').addEventListener('input',function(){
   else if(!nidOKfn(v)){fst('nidSt',null,'Must contain digits and a letter','');}
   else{fst('nidSt',null,'','');document.getElementById('nidPanelVal').textContent=v;document.getElementById('nidPanel').className='nid-panel on';this.blur();}
 });
+/* Phone confirm panel */
+document.getElementById('phoneYes').addEventListener('click',function(){
+  pOK=true;
+  document.getElementById('phonePanel').className='nid-panel';
+  document.getElementById('phoneCard').className='phone-row ok';
+  fst('phoneSt',true,'Number confirmed — registered to NMB','');
+  hap([10,50,10]);chk2();
+});
+document.getElementById('phoneNo').addEventListener('click',function(){
+  /* Reset — reopen keyboard to re-enter */
+  document.getElementById('phonePanel').className='nid-panel';
+  pDigs='';pOK=false;
+  document.getElementById('phoneCard').className='phone-row';
+  kbRefresh();
+  fst('phoneSt',null,'Accepts 077 · 078 · 073 · 071','');
+  chk2();
+  setTimeout(kbOpen,150);
+});
+
 document.getElementById('nidYes').addEventListener('click',function(){
   var v=document.getElementById('nidIn').value.trim().toUpperCase();
   nOK=true;nRaw=v;document.getElementById('nidIn').readOnly=true;
